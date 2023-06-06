@@ -27,18 +27,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
-const cors = require('cors');
+const cors = require("cors");
 const bodyParser = __importStar(require("body-parser"));
 const server_1 = __importDefault(require("./DB/server"));
 // Initialize the express engine
 const api = express();
-const loginRoute = require('./routes/login');
+const loginRoute = require("./routes/login");
 const port = 3000;
 // Enable CORS for all routes
 api.use(cors());
 api.use(bodyParser.urlencoded({ extended: false }));
 api.use(bodyParser.json());
-api.use('/login', loginRoute);
+api.use("/", loginRoute);
 api.listen(port, () => {
     console.log(`api up and running on port ${port}`);
     server_1.default.creatTable();
