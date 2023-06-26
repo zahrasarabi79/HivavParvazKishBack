@@ -33,10 +33,10 @@ const server_1 = __importDefault(require("./DB/server"));
 // Initialize the express engine
 const api = express();
 const loginRoute = require("./routes/login");
-const port = 3000;
+const port = 3001;
 // Enable CORS for all routes
 api.use(cors());
-api.use(bodyParser.urlencoded({ extended: false }));
+api.use(bodyParser.urlencoded({ extended: true }));
 api.use(bodyParser.json());
 api.use("/", loginRoute);
 api.listen(port, () => {

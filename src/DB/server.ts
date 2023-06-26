@@ -15,7 +15,7 @@ function creatDbInstance() {
 
 const creatTable = async () => {
   try {
-    await database.authenticate(); //
+    await database.authenticate();
     await database.sync();
     console.log("creat database");
   } catch (error) {

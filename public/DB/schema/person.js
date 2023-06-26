@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
-//@table : در این جا دکورتور فانکشن که پرانتزش توی تی اس کانفیگ برداشته شده 
+//@table : در این جا دکورتور فانکشن که پرانتزش توی تی اس کانفیگ برداشته شده
 let Users = class Users extends sequelize_typescript_1.Model {
 };
 __decorate([
@@ -23,7 +23,7 @@ __decorate([
 ], Users.prototype, "password", void 0);
 Users = __decorate([
     (0, sequelize_typescript_1.Table)({
-        timestamps: false
+        timestamps: false,
     })
 ], Users);
 exports.default = Users;

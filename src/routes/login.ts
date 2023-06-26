@@ -1,20 +1,22 @@
 import express = require("express");
 import { Request, Response } from "express";
+import insertData from "../DB/insertdata";
 import jwt from "jsonwebtoken";
-import { IUsers } from "../app";
+import { IUsers}  from "../app";
+import { error } from "console";
 
 const router = express.Router();
-const usersAdmin = { username: "sahar", password: "sahar1" };
+const usersAdmin = { username: "sahar", password: "z" };
 const secretKey = "PGS1401730";
 
-router.post("/login", (req: Request, res: Response) => {
+router.post("/login", (req: Request, res: Response, next: Function) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res
       .status(400)
       .json({ message: "Username and password are required" });
   }
-  const users: IUsers = {
+  const users:IUsers = {
     username,
     password,
   };
@@ -23,39 +25,41 @@ router.post("/login", (req: Request, res: Response) => {
     users.password === usersAdmin.password
   ) {
     const token = jwt.sign(users, secretKey);
-    res.status(200).json({ token });
-    console.log("Generated JWT:", token);
-
-    // Allow access to the dashboard or perform other actions
+    res.json({ token });
+    res.status(200).json({ message: "valid credentials" });
   } else {
     res.status(401).json({ message: "Invalid credentials" }); // Deny access or handle authentication failure
   }
-  res.redirect('/protected');
 });
-// Protected route
-router.post("/protected", verifyToken, (req, res) => {
-  // This route is protected and can only be accessed with a valid token
-  // res.send("xaya");
+//dashboard route
+router.post("/dashboard", verifyToken, (req, res) => {
+  console.log("token has valid");
+  res.json({ message: "Protected route accessed successfully" });
+});
+
+router.post("/AddReports", verifyToken, (req, res) => {
+  const payload = req.body;
+  console.log(payload.report)
+  if (typeof payload !== "object" || payload === null) {
+    return res.status(400).json({ error: "Invalid payload" });
+  }
+
   res.json({ message: "Protected route accessed successfully" });
 });
 
 // Token verification middleware
 function verifyToken(req: Request, res: Response, next: Function) {
-  const token = req.headers["authorization"];
-console.log(token);
-
+  const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    return res.status(401).json({ message: "Token not provided" });
+    throw new Error("Authorization token is required");
   }
-
-  jwt.verify(token, secretKey, (err, decoded) => {
-    console.log(decoded);
-
+  jwt.verify(token, secretKey, function (err, decoded) {
     if (err) {
-      return res.status(403).json({ message: "Invalid token" });
+      throw new Error("Error : " + err);
     }
-
-    next();
+    console.log(decoded);
   });
+  next();
 }
+
 module.exports = router;

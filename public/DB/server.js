@@ -23,7 +23,7 @@ function creatDbInstance() {
 }
 const creatTable = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield database.authenticate(); //
+        yield database.authenticate();
         yield database.sync();
         console.log("creat database");
     }

@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const router = express.Router();
-const usersAdmin = { username: "sahar", password: "sahar1" };
+const usersAdmin = { username: "sahar", password: "z" };
 const secretKey = "PGS1401730";
-router.post("/login", (req, res) => {
+router.post("/login", (req, res, next) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res
@@ -22,34 +22,39 @@ router.post("/login", (req, res) => {
     if (users.username === usersAdmin.username &&
         users.password === usersAdmin.password) {
         const token = jsonwebtoken_1.default.sign(users, secretKey);
-        res.status(200).json({ token });
-        console.log("Generated JWT:", token);
-        // Allow access to the dashboard or perform other actions
+        res.json({ token });
+        res.status(200).json({ message: "valid credentials" });
     }
     else {
         res.status(401).json({ message: "Invalid credentials" }); // Deny access or handle authentication failure
     }
-    res.redirect('/protected');
 });
-// Protected route
-router.post("/protected", verifyToken, (req, res) => {
-    // This route is protected and can only be accessed with a valid token
-    // res.send("xaya");
+//dashboard route
+router.post("/dashboard", verifyToken, (req, res) => {
+    console.log("token has valid");
+    res.json({ message: "Protected route accessed successfully" });
+});
+router.post("/AddReports", verifyToken, (req, res) => {
+    const payload = req.body;
+    console.log(payload.report);
+    if (typeof payload !== "object" || payload === null) {
+        return res.status(400).json({ error: "Invalid payload" });
+    }
     res.json({ message: "Protected route accessed successfully" });
 });
 // Token verification middleware
 function verifyToken(req, res, next) {
-    const token = req.headers["authorization"];
-    console.log(token);
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
     if (!token) {
-        return res.status(401).json({ message: "Token not provided" });
+        throw new Error("Authorization token is required");
     }
-    jsonwebtoken_1.default.verify(token, secretKey, (err, decoded) => {
-        console.log(decoded);
+    jsonwebtoken_1.default.verify(token, secretKey, function (err, decoded) {
         if (err) {
-            return res.status(403).json({ message: "Invalid token" });
+            throw new Error("Error : " + err);
         }
-        next();
+        console.log(decoded);
     });
+    next();
 }
 module.exports = router;
