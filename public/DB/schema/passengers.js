@@ -8,22 +8,30 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
-//@table : در این جا دکورتور فانکشن که پرانتزش توی تی اس کانفیگ برداشته شده
-let Users = class Users extends sequelize_typescript_1.Model {
+const contracts_1 = __importDefault(require("./contracts"));
+let PassengersModel = class PassengersModel extends sequelize_typescript_1.Model {
 };
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
-], Users.prototype, "username", void 0);
+], PassengersModel.prototype, "passenger", void 0);
 __decorate([
+    (0, sequelize_typescript_1.ForeignKey)(() => contracts_1.default),
     sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], Users.prototype, "password", void 0);
-Users = __decorate([
+    __metadata("design:type", Number)
+], PassengersModel.prototype, "contractId", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => contracts_1.default),
+    __metadata("design:type", Object)
+], PassengersModel.prototype, "contract", void 0);
+PassengersModel = __decorate([
     (0, sequelize_typescript_1.Table)({
         timestamps: false,
     })
-], Users);
-exports.default = Users;
+], PassengersModel);
+exports.default = PassengersModel;

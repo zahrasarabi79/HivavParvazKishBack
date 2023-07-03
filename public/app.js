@@ -30,11 +30,9 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = __importStar(require("body-parser"));
 const server_1 = __importDefault(require("./DB/server"));
-// Initialize the express engine
 const api = express();
 const loginRoute = require("./routes/login");
 const port = 3001;
-// Enable CORS for all routes
 api.use(cors());
 api.use(bodyParser.urlencoded({ extended: true }));
 api.use(bodyParser.json());
