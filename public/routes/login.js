@@ -53,6 +53,7 @@ router.post("/AddReports", verifyToken, (req, res) => __awaiter(void 0, void 0, 
     }
     const { dateContract, numContract, passengers, report, typeReport } = req.body;
     // await insertData.insertData(payload);
+    console.log({ dateContract, numContract, passengers, report, typeReport });
     const contract = yield insertdata_1.default.insertData({
         dateContract,
         numContract,
@@ -83,9 +84,8 @@ router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0,
     res.json({ Contracts });
 }));
 router.post("/listOfReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.body;
+    // const { id } = req.body;
     const Contracts = yield contracts_1.default.findAll({
-        where: { id: parseInt(id) },
         include: [
             {
                 model: report_1.default,
@@ -97,14 +97,14 @@ router.post("/listOfReports", verifyToken, (req, res) => __awaiter(void 0, void 
             },
         ],
     });
-    const { numContract, dateContract } = Contracts[0].dataValues;
-    res.json({ numContract, dateContract });
+    res.json({ Contracts });
 }));
 router.post("/deleteReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
     yield contracts_1.default.destroy({
         where: { id: parseInt(id) },
     });
+    res.json({ message: "Protected route accessed successfully" });
 }));
 router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id, numContract, dateContract, typeReport, report, passengers, } = req.body;

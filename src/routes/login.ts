@@ -58,6 +58,8 @@ router.post("/AddReports", verifyToken, async (req, res) => {
   const { dateContract, numContract, passengers, report, typeReport } =
     req.body as IContractDto;
   // await insertData.insertData(payload);
+  console.log({ dateContract, numContract, passengers, report, typeReport });
+
   const contract = await insertData.insertData({
     dateContract,
     numContract,
@@ -65,6 +67,7 @@ router.post("/AddReports", verifyToken, async (req, res) => {
     report,
     typeReport,
   });
+
   if (!contract) return false;
 
   res.json({ id: contract.id });
@@ -90,9 +93,8 @@ router.post("/showReports", verifyToken, async (req, res) => {
   res.json({ Contracts });
 });
 router.post("/listOfReports", verifyToken, async (req, res) => {
-  const { id } = req.body;
+  // const { id } = req.body;
   const Contracts = await ContractsModel.findAll({
-    where: { id: parseInt(id) },
     include: [
       {
         model: ReportsModel,
@@ -104,15 +106,16 @@ router.post("/listOfReports", verifyToken, async (req, res) => {
       },
     ],
   });
-  const { numContract, dateContract } = Contracts[0].dataValues;
 
-  res.json({ numContract, dateContract });
+  res.json({ Contracts });
 });
 router.post("/deleteReports", verifyToken, async (req, res) => {
   const { id } = req.body;
+
   await ContractsModel.destroy({
     where: { id: parseInt(id) },
   });
+  res.json({ message: "Protected route accessed successfully" });
 });
 router.post("/updateReports", verifyToken, async (req, res) => {
   const {

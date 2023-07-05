@@ -12,6 +12,7 @@ const insertData = async ({
   report,
   typeReport,
 }: IContractDto) => {
+
   try {
     const contract = await ContractsModel.create({
       numContract: numContract,
@@ -19,7 +20,6 @@ const insertData = async ({
       typeReport: typeReport,
     });
     if (!contract) return false;
-
     let reportsModelData: IReportsModel[] = report.map(
       ({ bank, costTitle, datepayment, number, payments, presenter }) => {
         return {
