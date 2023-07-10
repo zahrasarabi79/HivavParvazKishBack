@@ -108,6 +108,7 @@ router.post("/deleteReports", verifyToken, (req, res) => __awaiter(void 0, void 
 }));
 router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id, numContract, dateContract, typeReport, report, passengers, } = req.body;
+    console.log(req.body);
     yield updatecontract_1.default.updateData({
         id,
         numContract,

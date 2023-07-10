@@ -126,7 +126,7 @@ router.post("/updateReports", verifyToken, async (req, res) => {
     report,
     passengers,
   }: IUpdateContractDto = req.body;
-
+  console.log(req.body);
   await updatecontract.updateData({
     id,
     numContract,
@@ -135,6 +135,7 @@ router.post("/updateReports", verifyToken, async (req, res) => {
     report,
     passengers,
   });
+
   const findContract = await ContractsModel.findOne({
     where: { id: id },
     include: [
