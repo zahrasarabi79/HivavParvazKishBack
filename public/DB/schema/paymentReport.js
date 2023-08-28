@@ -11,40 +11,36 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
 const contracts_1 = __importDefault(require("./contracts"));
-const reportPayment_1 = __importDefault(require("./reportPayment"));
-let ReportsModel = class ReportsModel extends sequelize_typescript_1.Model {
+let ReportsPaymentModel = class ReportsPaymentModel extends sequelize_typescript_1.Model {
 };
 __decorate([
     sequelize_typescript_1.Column,
-    __metadata("design:type", Number)
-], ReportsModel.prototype, "number", void 0);
+    __metadata("design:type", String)
+], ReportsPaymentModel.prototype, "bank", void 0);
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
-], ReportsModel.prototype, "costTitle", void 0);
+], ReportsPaymentModel.prototype, "payments", void 0);
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
-], ReportsModel.prototype, "presenter", void 0);
-__decorate([
-    (0, sequelize_typescript_1.HasMany)(() => reportPayment_1.default),
-    __metadata("design:type", Array)
-], ReportsModel.prototype, "reportPayment", void 0);
+], ReportsPaymentModel.prototype, "datepayment", void 0);
 __decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => contracts_1.default),
     sequelize_typescript_1.Column,
     __metadata("design:type", Number)
-], ReportsModel.prototype, "contractId", void 0);
+], ReportsPaymentModel.prototype, "contractId", void 0);
 __decorate([
     (0, sequelize_typescript_1.BelongsTo)(() => contracts_1.default),
-    __metadata("design:type", contracts_1.default)
-], ReportsModel.prototype, "contract", void 0);
-ReportsModel = __decorate([
+    __metadata("design:type", typeof (_a = typeof ReportsModel !== "undefined" && ReportsModel) === "function" ? _a : Object)
+], ReportsPaymentModel.prototype, "contract", void 0);
+ReportsPaymentModel = __decorate([
     (0, sequelize_typescript_1.Table)({
         timestamps: false,
     })
-], ReportsModel);
-exports.default = ReportsModel;
+], ReportsPaymentModel);
+exports.default = ReportsPaymentModel;

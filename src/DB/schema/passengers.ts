@@ -1,10 +1,4 @@
-import {
-  Table,
-  Column,
-  Model,
-  ForeignKey,
-  BelongsTo,
-} from "sequelize-typescript";
+import { Table, Column, Model, ForeignKey, BelongsTo } from "sequelize-typescript";
 import ContractsModel, { IContractsModel } from "./contracts";
 
 export interface IPassengersModel {
@@ -21,7 +15,7 @@ export default class PassengersModel extends Model<IPassengersModel> {
   @ForeignKey(() => ContractsModel)
   @Column
   public contractId!: number;
-  // Define the association
+
   @BelongsTo(() => ContractsModel)
   public contract!: IContractsModel;
 }

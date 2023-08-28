@@ -19,22 +19,20 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const passengers_1 = __importDefault(require("../DB/schema/passengers"));
 const contracts_1 = __importDefault(require("../DB/schema/contracts"));
 const report_1 = __importDefault(require("../DB/schema/report"));
+const reportPayment_1 = __importDefault(require("../DB/schema/reportPayment"));
 const router = express.Router();
 const usersAdmin = { username: "sahar", password: "z" };
 const secretKey = "PGS1401730";
 router.post("/login", (req, res, next) => {
     const { username, password } = req.body;
     if (!username || !password) {
-        return res
-            .status(400)
-            .json({ message: "Username and password are required" });
+        return res.status(400).json({ message: "Username and password are required" });
     }
     const users = {
         username,
         password,
     };
-    if (users.username === usersAdmin.username &&
-        users.password === usersAdmin.password) {
+    if (users.username === usersAdmin.username && users.password === usersAdmin.password) {
         const token = jsonwebtoken_1.default.sign(users, secretKey);
         res.json({ token });
         res.status(200).json({ message: "valid credentials" });
@@ -52,8 +50,6 @@ router.post("/AddReports", verifyToken, (req, res) => __awaiter(void 0, void 0, 
         return res.status(400).json({ error: "Invalid payload" });
     }
     const { dateContract, numContract, passengers, report, typeReport } = req.body;
-    // await insertData.insertData(payload);
-    console.log({ dateContract, numContract, passengers, report, typeReport });
     const contract = yield insertdata_1.default.insertData({
         dateContract,
         numContract,
@@ -64,7 +60,6 @@ router.post("/AddReports", verifyToken, (req, res) => __awaiter(void 0, void 0, 
     if (!contract)
         return false;
     res.json({ id: contract.id });
-    // res.json({ message: "Protected route accessed successfully" });
 }));
 router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
@@ -73,7 +68,13 @@ router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0,
         include: [
             {
                 model: report_1.default,
-                required: true, // Use inner join
+                required: true,
+                include: [
+                    {
+                        model: reportPayment_1.default,
+                        required: true,
+                    },
+                ],
             },
             {
                 model: passengers_1.default,
@@ -89,7 +90,13 @@ router.post("/listOfReports", verifyToken, (req, res) => __awaiter(void 0, void 
         include: [
             {
                 model: report_1.default,
-                required: true, // Use inner join
+                required: true,
+                include: [
+                    {
+                        model: reportPayment_1.default,
+                        required: true,
+                    },
+                ],
             },
             {
                 model: passengers_1.default,
@@ -107,7 +114,7 @@ router.post("/deleteReports", verifyToken, (req, res) => __awaiter(void 0, void 
     res.json({ message: "Protected route accessed successfully" });
 }));
 router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id, numContract, dateContract, typeReport, report, passengers, } = req.body;
+    const { id, numContract, dateContract, typeReport, report, passengers } = req.body;
     console.log(req.body);
     yield updatecontract_1.default.updateData({
         id,
@@ -122,7 +129,13 @@ router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 
         include: [
             {
                 model: report_1.default,
-                required: true, // Use inner join
+                required: true,
+                include: [
+                    {
+                        model: reportPayment_1.default,
+                        required: true,
+                    },
+                ],
             },
             {
                 model: passengers_1.default,

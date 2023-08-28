@@ -1,12 +1,3 @@
-export interface IReportDto {
-  number: number;
-  costTitle: string;
-  presenter: string;
-  bank: string;
-  payments: string;
-  datepayment: string;
-}
-
 export interface IContractDto {
   numContract: string;
   dateContract: string;
@@ -21,4 +12,16 @@ export interface IUpdateContractDto {
   passengers: string[];
   typeReport: string;
   report: IReportDto[];
+}
+export interface IReportDto {
+  number: number;
+  costTitle: string;
+  presenter: string;
+  reportPayment: IReportPaymentDto[];
+}
+
+export interface IReportPaymentDto {
+  bank: string;
+  payments: string;
+  datepayment: string;
 }

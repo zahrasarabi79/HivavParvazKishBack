@@ -15,7 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const contracts_1 = __importDefault(require("./schema/contracts"));
 const passengers_1 = __importDefault(require("./schema/passengers"));
 const report_1 = __importDefault(require("./schema/report"));
-const updateData = ({ id, numContract, dateContract, typeReport, report, passengers, }) => __awaiter(void 0, void 0, void 0, function* () {
+const reportPayment_1 = __importDefault(require("./schema/reportPayment"));
+const updateData = ({ id, numContract, dateContract, typeReport, report, passengers }) => __awaiter(void 0, void 0, void 0, function* () {
     yield contracts_1.default.update({
         numContract,
         dateContract,
@@ -29,17 +30,23 @@ const updateData = ({ id, numContract, dateContract, typeReport, report, passeng
     yield passengers_1.default.destroy({
         where: { contractId: id },
     });
-    let reportsModelData = report.map(({ bank, costTitle, datepayment, number, payments, presenter }) => {
+    let reportsModelData = report.map(({ costTitle, number, presenter, reportPayment }) => {
+        let reportPaymentData = reportPayment.map(({ bank, payments, datepayment }) => {
+            return { bank, payments, datepayment, contractId: id };
+        });
         return {
             costTitle,
-            datepayment,
             number,
-            payments,
             presenter,
-            bank,
+            reportPayment: reportPaymentData,
             contractId: id,
         };
     });
+    for (const reportData of reportsModelData) {
+        const reportInstance = yield report_1.default.create(reportData);
+        const reportPayments = reportData.reportPayment.map((payment) => (Object.assign(Object.assign({}, payment), { reportId: reportInstance.id, contractId: reportInstance.contractId })));
+        yield reportPayment_1.default.bulkCreate(reportPayments);
+    }
     yield report_1.default.bulkCreate(reportsModelData);
     let passengersModelData = passengers.map((passenger) => {
         return { passenger, contractId: id };

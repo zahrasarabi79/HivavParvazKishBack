@@ -1,11 +1,6 @@
-import {
-  Table,
-  Column,
-  Model,
-  ForeignKey,
-  BelongsTo,
-} from "sequelize-typescript";
+import { Table, Column, Model, ForeignKey, BelongsTo, HasMany } from "sequelize-typescript";
 import ContractsModel, { IContractsModel } from "./contracts";
+import ReportsPaymentModel, { IReportsPayment } from "./reportPayment";
 
 // export interface IReports {
 //   report: IReport[];
@@ -14,33 +9,27 @@ export interface IReportsModel {
   number: number;
   costTitle: string;
   presenter: string;
-  bank: string;
-  payments: string;
-  datepayment: string;
+  reportPayment: IReportsPayment[];
   contractId: number;
 }
-//@table : در این جا دکورتور فانکشن که پرانتزش توی تی اس کانفیگ برداشته شده
 @Table({
   timestamps: false,
 })
 export default class ReportsModel extends Model<IReportsModel> {
-  //   public report!: IReport[];
   @Column
-  public number!: number; //علامت سوال به معنی پر کردن اجباری این ستون است
+  public number!: number;
   @Column
   public costTitle!: string;
   @Column
   public presenter!: string;
-  @Column
-  public bank!: string;
-  @Column
-  public payments!: string;
-  @Column
-  public datepayment!: string;
+
+  @HasMany(() => ReportsPaymentModel)
+  public reportPayment!: ReportsPaymentModel[];
 
   @ForeignKey(() => ContractsModel)
   @Column
   contractId!: number;
+
   @BelongsTo(() => ContractsModel)
-  contract!: ContractsModel;
+  contract!:ContractsModel;
 }
