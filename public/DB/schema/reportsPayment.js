@@ -11,10 +11,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
 const contracts_1 = __importDefault(require("./contracts"));
+const reports_1 = __importDefault(require("./reports"));
 let ReportsPaymentModel = class ReportsPaymentModel extends sequelize_typescript_1.Model {
 };
 __decorate([
@@ -30,14 +30,23 @@ __decorate([
     __metadata("design:type", String)
 ], ReportsPaymentModel.prototype, "datepayment", void 0);
 __decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", String)
+], ReportsPaymentModel.prototype, "paymentDescription", void 0);
+__decorate([
+    (0, sequelize_typescript_1.ForeignKey)(() => reports_1.default),
+    sequelize_typescript_1.Column,
+    __metadata("design:type", Number)
+], ReportsPaymentModel.prototype, "reportId", void 0);
+__decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => contracts_1.default),
     sequelize_typescript_1.Column,
     __metadata("design:type", Number)
 ], ReportsPaymentModel.prototype, "contractId", void 0);
 __decorate([
-    (0, sequelize_typescript_1.BelongsTo)(() => contracts_1.default),
-    __metadata("design:type", typeof (_a = typeof ReportsModel !== "undefined" && ReportsModel) === "function" ? _a : Object)
-], ReportsPaymentModel.prototype, "contract", void 0);
+    (0, sequelize_typescript_1.BelongsTo)(() => reports_1.default),
+    __metadata("design:type", reports_1.default)
+], ReportsPaymentModel.prototype, "reports", void 0);
 ReportsPaymentModel = __decorate([
     (0, sequelize_typescript_1.Table)({
         timestamps: false,

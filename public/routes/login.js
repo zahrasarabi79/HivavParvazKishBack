@@ -16,10 +16,10 @@ const express = require("express");
 const insertdata_1 = __importDefault(require("../DB/insertdata"));
 const updatecontract_1 = __importDefault(require("../DB/updatecontract"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const passengers_1 = __importDefault(require("../DB/schema/passengers"));
+const customers_1 = __importDefault(require("../DB/schema/customers"));
 const contracts_1 = __importDefault(require("../DB/schema/contracts"));
-const report_1 = __importDefault(require("../DB/schema/report"));
-const reportPayment_1 = __importDefault(require("../DB/schema/reportPayment"));
+const reports_1 = __importDefault(require("../DB/schema/reports"));
+const reportsPayment_1 = __importDefault(require("../DB/schema/reportsPayment"));
 const router = express.Router();
 const usersAdmin = { username: "sahar", password: "z" };
 const secretKey = "PGS1401730";
@@ -49,13 +49,13 @@ router.post("/AddReports", verifyToken, (req, res) => __awaiter(void 0, void 0, 
     if (typeof req.body !== "object" || req.body === null) {
         return res.status(400).json({ error: "Invalid payload" });
     }
-    const { dateContract, numContract, passengers, report, typeReport } = req.body;
+    const { dateContract, numContract, customer, reports, typeContract } = req.body;
     const contract = yield insertdata_1.default.insertData({
         dateContract,
         numContract,
-        passengers,
-        report,
-        typeReport,
+        customer,
+        reports,
+        typeContract,
     });
     if (!contract)
         return false;
@@ -67,17 +67,17 @@ router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0,
         where: { id: parseInt(id) },
         include: [
             {
-                model: report_1.default,
+                model: reports_1.default,
                 required: true,
                 include: [
                     {
-                        model: reportPayment_1.default,
+                        model: reportsPayment_1.default,
                         required: true,
                     },
                 ],
             },
             {
-                model: passengers_1.default,
+                model: customers_1.default,
                 required: true, // Use inner join
             },
         ],
@@ -85,21 +85,23 @@ router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0,
     res.json({ Contracts });
 }));
 router.post("/listOfReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // const { id } = req.body;
+    // const { page, limitPerPage } = req.body;
     const Contracts = yield contracts_1.default.findAll({
+        // limit: limitPerPage,
+        // offset: (page - 1) * limitPerPage,
         include: [
             {
-                model: report_1.default,
+                model: reports_1.default,
                 required: true,
                 include: [
                     {
-                        model: reportPayment_1.default,
+                        model: reportsPayment_1.default,
                         required: true,
                     },
                 ],
             },
             {
-                model: passengers_1.default,
+                model: customers_1.default,
                 required: true, // Use inner join
             },
         ],
@@ -114,31 +116,31 @@ router.post("/deleteReports", verifyToken, (req, res) => __awaiter(void 0, void 
     res.json({ message: "Protected route accessed successfully" });
 }));
 router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id, numContract, dateContract, typeReport, report, passengers } = req.body;
+    const { id, numContract, dateContract, typeContract, reports, customers } = req.body;
     console.log(req.body);
     yield updatecontract_1.default.updateData({
         id,
         numContract,
         dateContract,
-        typeReport,
-        report,
-        passengers,
+        typeContract,
+        reports,
+        customers,
     });
     const findContract = yield contracts_1.default.findOne({
         where: { id: id },
         include: [
             {
-                model: report_1.default,
+                model: reports_1.default,
                 required: true,
                 include: [
                     {
-                        model: reportPayment_1.default,
+                        model: reportsPayment_1.default,
                         required: true,
                     },
                 ],
             },
             {
-                model: passengers_1.default,
+                model: customers_1.default,
                 required: true, // Use inner join
             },
         ],

@@ -1,27 +1,38 @@
+import { IReportsReturnPayment } from "../DB/schema/reportsReturnPayment";
+
 export interface IContractDto {
   numContract: string;
   dateContract: string;
-  passengers: string[];
-  typeReport: string;
-  report: IReportDto[];
+  customer: string;
+  typeContract: string;
+  reports: IReportDto[];
 }
 export interface IUpdateContractDto {
   id: number;
   numContract: string;
   dateContract: string;
-  passengers: string[];
-  typeReport: string;
-  report: IReportDto[];
+  customers: string[];
+  typeContract: string;
+  reports: IReportDto[];
 }
 export interface IReportDto {
-  number: number;
-  costTitle: string;
+  reportDescription: string;
+  totalCost: string;
   presenter: string;
-  reportPayment: IReportPaymentDto[];
+  reportsPayment: IReportPaymentDto[];
+  reportsReturnPayment: IReportsReturnPaymentDto[];
 }
 
 export interface IReportPaymentDto {
   bank: string;
   payments: string;
   datepayment: string;
+  paymentDescription: string;
+}
+
+export interface IReportsReturnPaymentDto {
+  returnPaymentsbank: string;
+  returnPayments: string;
+  dateReturnPayment: string;
+  returnPaymentDescription: string;
 }

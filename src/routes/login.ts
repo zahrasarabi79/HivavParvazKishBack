@@ -6,13 +6,13 @@ import jwt from "jsonwebtoken";
 import { error, log } from "console";
 import { IContractDto, IUpdateContractDto } from "../dto/IContractDto";
 import { parseArgs } from "util";
-import PassengersModel, { IPassengersModel } from "../DB/schema/passengers";
+import CustomersModel, { ICustomersModel } from "../DB/schema/customers";
 import Contracts from "../DB/schema/contracts";
-import Report, { IReportsModel } from "../DB/schema/report";
+import Report, { IReportsModel } from "../DB/schema/reports";
 import { where } from "sequelize";
 import ContractsModel from "../DB/schema/contracts";
-import ReportsModel from "../DB/schema/report";
-import ReportsPaymentModel from "../DB/schema/reportPayment";
+import ReportsModel from "../DB/schema/reports";
+import ReportsPaymentModel from "../DB/schema/reportsPayment";
 
 const router = express.Router();
 const usersAdmin = { username: "sahar", password: "z" };
@@ -51,13 +51,13 @@ router.post("/AddReports", verifyToken, async (req, res) => {
     return res.status(400).json({ error: "Invalid payload" });
   }
 
-  const { dateContract, numContract, passengers, report, typeReport } = req.body as IContractDto;
+  const { dateContract, numContract, customer, reports, typeContract } = req.body as IContractDto;
   const contract = await insertData.insertData({
     dateContract,
     numContract,
-    passengers,
-    report,
-    typeReport,
+    customer,
+    reports,
+    typeContract,
   });
 
   if (!contract) return false;
@@ -80,7 +80,7 @@ router.post("/showReports", verifyToken, async (req, res) => {
         ],
       },
       {
-        model: PassengersModel,
+        model: CustomersModel,
         required: true, // Use inner join
       },
     ],
@@ -90,8 +90,10 @@ router.post("/showReports", verifyToken, async (req, res) => {
 });
 
 router.post("/listOfReports", verifyToken, async (req, res) => {
-  // const { id } = req.body;
+  // const { page, limitPerPage } = req.body;
   const Contracts = await ContractsModel.findAll({
+    // limit: limitPerPage,
+    // offset: (page - 1) * limitPerPage,
     include: [
       {
         model: ReportsModel,
@@ -104,7 +106,7 @@ router.post("/listOfReports", verifyToken, async (req, res) => {
         ],
       },
       {
-        model: PassengersModel,
+        model: CustomersModel,
         required: true, // Use inner join
       },
     ],
@@ -123,15 +125,15 @@ router.post("/deleteReports", verifyToken, async (req, res) => {
 });
 
 router.post("/updateReports", verifyToken, async (req, res) => {
-  const { id, numContract, dateContract, typeReport, report, passengers }: IUpdateContractDto = req.body;
+  const { id, numContract, dateContract, typeContract, reports, customers }: IUpdateContractDto = req.body;
   console.log(req.body);
   await updatecontract.updateData({
     id,
     numContract,
     dateContract,
-    typeReport,
-    report,
-    passengers,
+    typeContract,
+    reports,
+    customers,
   });
 
   const findContract = await ContractsModel.findOne({
@@ -148,7 +150,7 @@ router.post("/updateReports", verifyToken, async (req, res) => {
         ],
       },
       {
-        model: PassengersModel,
+        model: CustomersModel,
         required: true, // Use inner join
       },
     ],

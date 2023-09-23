@@ -1,16 +1,16 @@
 import { Table, Column, Model, ForeignKey, BelongsTo } from "sequelize-typescript";
 import ContractsModel, { IContractsModel } from "./contracts";
 
-export interface IPassengersModel {
-  passenger: string;
+export interface ICustomersModel {
+  customer: string;
   contractId: number;
 }
 @Table({
   timestamps: false,
 })
-export default class PassengersModel extends Model<IPassengersModel> {
+export default class CustomersModel extends Model<ICustomersModel> {
   @Column
-  public passenger!: string;
+  public customer!: string;
 
   @ForeignKey(() => ContractsModel)
   @Column

@@ -13,8 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
-const report_1 = __importDefault(require("./report"));
-const passengers_1 = __importDefault(require("./passengers"));
+const reports_1 = __importDefault(require("./reports"));
 //@table : در این جا دکورتور فانکشن که پرانتزش توی تی اس کانفیگ برداشته شده
 let ContractsModel = class ContractsModel extends sequelize_typescript_1.Model {
 };
@@ -29,15 +28,15 @@ __decorate([
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
-], ContractsModel.prototype, "typeReport", void 0);
+], ContractsModel.prototype, "typeContract", void 0);
 __decorate([
-    (0, sequelize_typescript_1.HasMany)(() => report_1.default),
-    __metadata("design:type", Array)
-], ContractsModel.prototype, "report", void 0);
+    sequelize_typescript_1.Column,
+    __metadata("design:type", String)
+], ContractsModel.prototype, "customer", void 0);
 __decorate([
-    (0, sequelize_typescript_1.HasMany)(() => passengers_1.default),
+    (0, sequelize_typescript_1.HasMany)(() => reports_1.default),
     __metadata("design:type", Array)
-], ContractsModel.prototype, "passengers", void 0);
+], ContractsModel.prototype, "reports", void 0);
 ContractsModel = __decorate([
     (0, sequelize_typescript_1.Table)({
         timestamps: false,

@@ -1,12 +1,13 @@
 import { Table, Column, Model, HasMany } from "sequelize-typescript";
-import ReportsModel, { IReportsModel } from "./report";
+import ReportsModel, { IReportsModel } from "./reports";
 import { IReportDto } from "../../dto/IContractDto";
-import PassengersModel, { IPassengersModel } from "./passengers";
+import CustomersModel, { ICustomersModel } from "./customers";
 export interface IContractsModel {
   id?: number;
   numContract: string;
   dateContract: string;
-  typeReport: string;
+  typeContract: string;
+  customer: string;
 }
 //@table : در این جا دکورتور فانکشن که پرانتزش توی تی اس کانفیگ برداشته شده
 @Table({
@@ -18,10 +19,12 @@ export default class ContractsModel extends Model<IContractsModel> {
   @Column
   public dateContract!: string;
   @Column
-  public typeReport!: string;
+  public typeContract!: string;
+  @Column
+  public customer!: string;
 
   @HasMany(() => ReportsModel)
-  public report!: ReportsModel[];
-  @HasMany(() => PassengersModel)
-  public passengers!: PassengersModel[];
+  public reports!: ReportsModel[];
+  // @HasMany(() => CustomersModel)
+  // public customers!: CustomersModel[];
 }

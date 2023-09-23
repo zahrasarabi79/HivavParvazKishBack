@@ -14,38 +14,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
 const contracts_1 = __importDefault(require("./contracts"));
-const report_1 = __importDefault(require("./report"));
-let ReportsPaymentModel = class ReportsPaymentModel extends sequelize_typescript_1.Model {
+let CustomersModel = class CustomersModel extends sequelize_typescript_1.Model {
 };
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
-], ReportsPaymentModel.prototype, "bank", void 0);
-__decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], ReportsPaymentModel.prototype, "payments", void 0);
-__decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], ReportsPaymentModel.prototype, "datepayment", void 0);
-__decorate([
-    (0, sequelize_typescript_1.ForeignKey)(() => report_1.default),
-    sequelize_typescript_1.Column,
-    __metadata("design:type", Number)
-], ReportsPaymentModel.prototype, "reportId", void 0);
+], CustomersModel.prototype, "customer", void 0);
 __decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => contracts_1.default),
     sequelize_typescript_1.Column,
     __metadata("design:type", Number)
-], ReportsPaymentModel.prototype, "contractId", void 0);
+], CustomersModel.prototype, "contractId", void 0);
 __decorate([
-    (0, sequelize_typescript_1.BelongsTo)(() => report_1.default),
-    __metadata("design:type", report_1.default)
-], ReportsPaymentModel.prototype, "report", void 0);
-ReportsPaymentModel = __decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => contracts_1.default),
+    __metadata("design:type", Object)
+], CustomersModel.prototype, "contract", void 0);
+CustomersModel = __decorate([
     (0, sequelize_typescript_1.Table)({
         timestamps: false,
     })
-], ReportsPaymentModel);
-exports.default = ReportsPaymentModel;
+], CustomersModel);
+exports.default = CustomersModel;

@@ -1,11 +1,12 @@
 import { Table, Column, Model, ForeignKey, BelongsTo } from "sequelize-typescript";
 import ContractsModel, { IContractsModel } from "./contracts";
-import ReportsModel, { IReportsModel } from "./report";
+import ReportsModel, { IReportsModel } from "./reports";
 
 export interface IReportsPayment {
   bank: string;
   payments: string;
   datepayment: string;
+  paymentDescription: string;
   contractId: number;
 }
 @Table({
@@ -18,6 +19,8 @@ export default class ReportsPaymentModel extends Model<IReportsPayment> {
   public payments!: string;
   @Column
   public datepayment!: string;
+  @Column
+  public paymentDescription!: string;
 
   @ForeignKey(() => ReportsModel)
   @Column
@@ -28,7 +31,5 @@ export default class ReportsPaymentModel extends Model<IReportsPayment> {
   contractId!: number;
 
   @BelongsTo(() => ReportsModel)
-  report!: ReportsModel;
-
-  
+  reports!: ReportsModel;
 }

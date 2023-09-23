@@ -13,44 +13,54 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const contracts_1 = __importDefault(require("./schema/contracts"));
-const passengers_1 = __importDefault(require("./schema/passengers"));
-const report_1 = __importDefault(require("./schema/report"));
-const reportPayment_1 = __importDefault(require("./schema/reportPayment"));
-const updateData = ({ id, numContract, dateContract, typeReport, report, passengers }) => __awaiter(void 0, void 0, void 0, function* () {
+const customers_1 = __importDefault(require("./schema/customers"));
+const reports_1 = __importDefault(require("./schema/reports"));
+const reportsPayment_1 = __importDefault(require("./schema/reportsPayment"));
+const reportsReturnPayment_1 = __importDefault(require("./schema/reportsReturnPayment"));
+const updateData = ({ id, numContract, dateContract, typeContract, reports, customers }) => __awaiter(void 0, void 0, void 0, function* () {
     yield contracts_1.default.update({
         numContract,
         dateContract,
-        typeReport,
+        typeContract,
     }, {
         where: { id: id },
     });
-    yield report_1.default.destroy({
+    yield reports_1.default.destroy({
         where: { contractId: id },
     });
-    yield passengers_1.default.destroy({
+    yield customers_1.default.destroy({
         where: { contractId: id },
     });
-    let reportsModelData = report.map(({ costTitle, number, presenter, reportPayment }) => {
-        let reportPaymentData = reportPayment.map(({ bank, payments, datepayment }) => {
-            return { bank, payments, datepayment, contractId: id };
+    let reportsModelData = reports.map(({ totalCost, reportDescription, presenter, reportsPayment, reportsReturnPayment }) => {
+        let reportPaymentData = reportsPayment.map(({ bank, payments, datepayment, paymentDescription }) => {
+            return { bank, payments, datepayment, contractId: id, paymentDescription };
+        });
+        let reportsReturnPaymentData = reportsReturnPayment.map(({ returnPaymentsbank, returnPayments, dateReturnPayment, returnPaymentDescription }) => {
+            return { returnPaymentsbank, returnPayments, dateReturnPayment, contractId: id, returnPaymentDescription };
         });
         return {
-            costTitle,
-            number,
+            totalCost,
+            reportDescription,
             presenter,
-            reportPayment: reportPaymentData,
+            reportsPayment: reportPaymentData,
+            reportsReturnPayment: reportsReturnPaymentData,
             contractId: id,
         };
     });
     for (const reportData of reportsModelData) {
-        const reportInstance = yield report_1.default.create(reportData);
-        const reportPayments = reportData.reportPayment.map((payment) => (Object.assign(Object.assign({}, payment), { reportId: reportInstance.id, contractId: reportInstance.contractId })));
-        yield reportPayment_1.default.bulkCreate(reportPayments);
+        const reportInstance = yield reports_1.default.create(reportData);
+        const reportPayments = reportData.reportsPayment.map((payment) => (Object.assign(Object.assign({}, payment), { reportId: reportInstance.id, contractId: reportInstance.contractId })));
+        yield reportsPayment_1.default.bulkCreate(reportPayments);
     }
-    yield report_1.default.bulkCreate(reportsModelData);
-    let passengersModelData = passengers.map((passenger) => {
-        return { passenger, contractId: id };
+    for (const reportData of reportsModelData) {
+        const reportInstance = yield reports_1.default.create(reportData);
+        const reportsReturnPayment = reportData.reportsReturnPayment.map((payment) => (Object.assign(Object.assign({}, payment), { reportId: reportInstance.id, contractId: reportInstance.contractId })));
+        yield reportsReturnPayment_1.default.bulkCreate(reportsReturnPayment);
+    }
+    yield reports_1.default.bulkCreate(reportsModelData);
+    let customersModelData = customers.map((customer) => {
+        return { customer, contractId: id };
     });
-    yield passengers_1.default.bulkCreate(passengersModelData);
+    yield customers_1.default.bulkCreate(customersModelData);
 });
 exports.default = { updateData };
