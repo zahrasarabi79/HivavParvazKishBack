@@ -1,11 +1,11 @@
 import Contracts from "./schema/contracts";
 import { IContractDto } from "../dto/IContractDto";
 import ReportsModel, { IReportsModel } from "./schema/reports";
-import customers, { ICustomersModel } from "./schema/customers";
-import CustomersModel from "./schema/customers";
+
 import ContractsModel from "./schema/contracts";
 import ReportsPaymentModel, { IReportsPayment } from "./schema/reportsPayment";
 import reportsReturnPaymentModel, { IReportsReturnPayment } from "./schema/reportsReturnPayment";
+import ReportsReturnPaymentModel from "./schema/reportsReturnPayment";
 
 const insertData = async ({ dateContract, numContract, customer, reports, typeContract }: IContractDto) => {
   try {
@@ -35,30 +35,31 @@ const insertData = async ({ dateContract, numContract, customer, reports, typeCo
         contractId: contract.id,
       };
     });
+
     for (const reportData of reportsModelData) {
       const reportInstance = await ReportsModel.create(reportData);
+      // Create a single report instance for each reportData
+    
+      // Map and associate all reportsPayment data with the report instance
       const reportPayments = reportData.reportsPayment.map((payment) => ({
         ...payment,
         reportId: reportInstance.id,
         contractId: reportInstance.contractId,
       }));
-      await ReportsPaymentModel.bulkCreate(reportPayments);
-    }
-    for (const reportData of reportsModelData) {
-      const reportInstance = await ReportsModel.create(reportData);
+    
+      // Map and associate all reportsReturnPayment data with the report instance
       const reportsReturnPayment = reportData.reportsReturnPayment.map((payment) => ({
         ...payment,
         reportId: reportInstance.id,
         contractId: reportInstance.contractId,
       }));
-      await reportsReturnPaymentModel.bulkCreate(reportsReturnPayment);
+    
+      // Use bulkCreate to insert multiple payments and return payments in one go
+      await ReportsPaymentModel.bulkCreate(reportPayments);
+      await ReportsReturnPaymentModel.bulkCreate(reportsReturnPayment);
     }
-    await ReportsModel.bulkCreate(reportsModelData);
+    console.log(contract);
 
-    // let customersModelData: ICustomersModel[] = customers.map((customer) => {
-    //   return { customer, contractId: contract.id };
-    // });
-    // await CustomersModel.bulkCreate(customersModelData);
     return contract;
   } catch (error) {
     console.log(error);

@@ -11,7 +11,7 @@ export interface IUpdateContractDto {
   id: number;
   numContract: string;
   dateContract: string;
-  customers: string[];
+  customer: string;
   typeContract: string;
   reports: IReportDto[];
 }

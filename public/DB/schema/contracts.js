@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
 const reports_1 = __importDefault(require("./reports"));
-//@table : در این جا دکورتور فانکشن که پرانتزش توی تی اس کانفیگ برداشته شده
 let ContractsModel = class ContractsModel extends sequelize_typescript_1.Model {
 };
 __decorate([

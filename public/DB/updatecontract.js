@@ -13,22 +13,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const contracts_1 = __importDefault(require("./schema/contracts"));
-const customers_1 = __importDefault(require("./schema/customers"));
 const reports_1 = __importDefault(require("./schema/reports"));
 const reportsPayment_1 = __importDefault(require("./schema/reportsPayment"));
 const reportsReturnPayment_1 = __importDefault(require("./schema/reportsReturnPayment"));
-const updateData = ({ id, numContract, dateContract, typeContract, reports, customers }) => __awaiter(void 0, void 0, void 0, function* () {
+const updateData = ({ id, numContract, dateContract, customer, typeContract, reports }) => __awaiter(void 0, void 0, void 0, function* () {
     yield contracts_1.default.update({
         numContract,
         dateContract,
         typeContract,
+        customer,
     }, {
         where: { id: id },
     });
     yield reports_1.default.destroy({
-        where: { contractId: id },
-    });
-    yield customers_1.default.destroy({
         where: { contractId: id },
     });
     let reportsModelData = reports.map(({ totalCost, reportDescription, presenter, reportsPayment, reportsReturnPayment }) => {
@@ -58,9 +55,5 @@ const updateData = ({ id, numContract, dateContract, typeContract, reports, cust
         yield reportsReturnPayment_1.default.bulkCreate(reportsReturnPayment);
     }
     yield reports_1.default.bulkCreate(reportsModelData);
-    let customersModelData = customers.map((customer) => {
-        return { customer, contractId: id };
-    });
-    yield customers_1.default.bulkCreate(customersModelData);
 });
 exports.default = { updateData };
