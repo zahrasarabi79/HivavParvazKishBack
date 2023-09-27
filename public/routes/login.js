@@ -113,8 +113,22 @@ router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0,
 router.post("/listOfReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // const { page, limitPerPage } = req.body;
     const Contracts = yield contracts_1.default.findAll({
-    // limit: limitPerPage,
-    // offset: (page - 1) * limitPerPage,
+        // limit: limitPerPage,
+        // offset: (page - 1) * limitPerPage,
+        include: [
+            {
+                model: reports_1.default,
+                required: true,
+                include: [
+                    {
+                        model: reportsPayment_1.default,
+                    },
+                    {
+                        model: reportsReturnPayment_1.default,
+                    },
+                ],
+            },
+        ],
     });
     res.json({ Contracts });
 }));

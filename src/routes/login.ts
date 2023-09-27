@@ -90,7 +90,7 @@ router.post("/AddReports", verifyToken, async (req, res) => {
 // });
 router.post("/showReports", verifyToken, async (req, res) => {
   const { id } = req.body;
-  
+
   // Find the contract with the given ID
   const contract = await ContractsModel.findOne({
     where: { id: parseInt(id) },
@@ -123,6 +123,20 @@ router.post("/listOfReports", verifyToken, async (req, res) => {
   const Contracts = await ContractsModel.findAll({
     // limit: limitPerPage,
     // offset: (page - 1) * limitPerPage,
+    include: [
+      {
+        model: ReportsModel,
+        required: true,
+        include: [
+          {
+            model: ReportsPaymentModel,
+          },
+          {
+            model: ReportsReturnPaymentModel,
+          },
+        ],
+      },
+    ],
   });
 
   res.json({ Contracts });
