@@ -2,7 +2,7 @@ import { IReportsReturnPayment } from "../DB/schema/reportsReturnPayment";
 
 export interface IContractDto {
   numContract: string;
-  dateContract: string;
+  dateContract: Date;
   customer: string;
   typeContract: string;
   reports: IReportDto[];
@@ -10,7 +10,7 @@ export interface IContractDto {
 export interface IUpdateContractDto {
   id: number;
   numContract: string;
-  dateContract: string;
+  dateContract: Date;
   customer: string;
   typeContract: string;
   reports: IReportDto[];
@@ -26,13 +26,13 @@ export interface IReportDto {
 export interface IReportPaymentDto {
   bank: string;
   payments: string;
-  datepayment: string;
+  datepayment: Date;
   paymentDescription: string;
 }
 
 export interface IReportsReturnPaymentDto {
   returnPaymentsbank: string;
   returnPayments: string;
-  dateReturnPayment: string;
+  dateReturnPayment: Date;
   returnPaymentDescription: string;
 }

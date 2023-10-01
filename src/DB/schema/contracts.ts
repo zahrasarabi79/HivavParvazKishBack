@@ -4,7 +4,7 @@ import { IReportDto } from "../../dto/IContractDto";
 export interface IContractsModel {
   id?: number;
   numContract: string;
-  dateContract: string;
+  dateContract: Date;
   typeContract: string;
   customer: string;
 }
@@ -16,7 +16,7 @@ export default class ContractsModel extends Model<IContractsModel> {
   public numContract!: string;
 
   @Column
-  public dateContract!: string;
+  public dateContract!: Date;
 
   @Column
   public typeContract!: string;

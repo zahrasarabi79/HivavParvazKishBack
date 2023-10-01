@@ -22,7 +22,7 @@ __decorate([
 ], ContractsModel.prototype, "numContract", void 0);
 __decorate([
     sequelize_typescript_1.Column,
-    __metadata("design:type", String)
+    __metadata("design:type", Date)
 ], ContractsModel.prototype, "dateContract", void 0);
 __decorate([
     sequelize_typescript_1.Column,

@@ -46,14 +46,14 @@ const updateData = ({ id, numContract, dateContract, customer, typeContract, rep
     });
     for (const reportData of reportsModelData) {
         const reportInstance = yield reports_1.default.create(reportData);
+        // Create a single report instance for each reportData
+        // Map and associate all reportsPayment data with the report instance
         const reportPayments = reportData.reportsPayment.map((payment) => (Object.assign(Object.assign({}, payment), { reportId: reportInstance.id, contractId: reportInstance.contractId })));
-        yield reportsPayment_1.default.bulkCreate(reportPayments);
-    }
-    for (const reportData of reportsModelData) {
-        const reportInstance = yield reports_1.default.create(reportData);
+        // Map and associate all reportsReturnPayment data with the report instance
         const reportsReturnPayment = reportData.reportsReturnPayment.map((payment) => (Object.assign(Object.assign({}, payment), { reportId: reportInstance.id, contractId: reportInstance.contractId })));
+        // Use bulkCreate to insert multiple payments and return payments in one go
+        yield reportsPayment_1.default.bulkCreate(reportPayments);
         yield reportsReturnPayment_1.default.bulkCreate(reportsReturnPayment);
     }
-    yield reports_1.default.bulkCreate(reportsModelData);
 });
 exports.default = { updateData };

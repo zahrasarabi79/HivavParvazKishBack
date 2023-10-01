@@ -5,7 +5,7 @@ import ReportsModel, { IReportsModel } from "./reports";
 export interface IReportsReturnPayment {
   returnPaymentsbank: string;
   returnPayments: string;
-  dateReturnPayment: string;
+  dateReturnPayment: Date;
   returnPaymentDescription: string;
   contractId: number;
 }
@@ -18,7 +18,7 @@ export default class ReportsReturnPaymentModel extends Model<IReportsReturnPayme
   @Column
   public returnPayments!: string;
   @Column
-  public dateReturnPayment!: string;
+  public dateReturnPayment!: Date;
   @Column
   public returnPaymentDescription!: string;
 

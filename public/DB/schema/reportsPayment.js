@@ -27,7 +27,7 @@ __decorate([
 ], ReportsPaymentModel.prototype, "payments", void 0);
 __decorate([
     sequelize_typescript_1.Column,
-    __metadata("design:type", String)
+    __metadata("design:type", Date)
 ], ReportsPaymentModel.prototype, "datepayment", void 0);
 __decorate([
     sequelize_typescript_1.Column,
