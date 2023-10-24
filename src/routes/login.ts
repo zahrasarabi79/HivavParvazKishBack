@@ -3,19 +3,15 @@ import { Request, Response } from "express";
 import insertData from "../DB/insertdata";
 import updatecontract from "../DB/updatecontract";
 import jwt from "jsonwebtoken";
-import { error, log } from "console";
 import { IContractDto, IUpdateContractDto } from "../dto/IContractDto";
-import { parseArgs } from "util";
-import Contracts from "../DB/schema/contracts";
-import Report, { IReportsModel } from "../DB/schema/reports";
-import { where } from "sequelize";
 import ContractsModel from "../DB/schema/contracts";
 import ReportsModel from "../DB/schema/reports";
 import ReportsPaymentModel from "../DB/schema/reportsPayment";
 import ReportsReturnPaymentModel from "../DB/schema/reportsReturnPayment";
+import updatepassword from "../DB/updatepassword";
+import UserModel from "../DB/schema/users";
 
 const router = express.Router();
-const usersAdmin = { username: "sahar", password: "z" };
 const secretKey = "PGS1401730";
 
 interface IUsers {
@@ -23,27 +19,48 @@ interface IUsers {
   password: string;
 }
 
-router.post("/login", (req: Request, res: Response, next: Function) => {
+router.post("/login", async (req, res) => {
   const { username, password } = req.body;
+
   if (!username || !password) {
     return res.status(400).json({ message: "Username and password are required" });
   }
-  const users: IUsers = {
-    username,
-    password,
-  };
-  if (users.username === usersAdmin.username && users.password === usersAdmin.password) {
-    const token = jwt.sign(users, secretKey);
-    res.json({ token });
-    res.status(200).json({ message: "valid credentials" });
-  } else {
-    res.status(401).json({ message: "Invalid credentials" });
+
+  try {
+    // Use Sequelize to find a user with the provided username
+    const user = await UserModel.findOne({ where: { username } });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    if (user.password === password) {
+      // User's credentials are valid; generate a JWT token
+      const token = jwt.sign({ username }, secretKey);
+      res.status(200).json({ token, message: "Valid credentials" });
+    } else {
+      // Password does not match
+      res.status(401).json({ message: "Invalid credentials" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
-
 router.post("/dashboard", verifyToken, (req, res) => {
   console.log("token has valid");
   res.json({ message: "Protected route accessed successfully" });
+});
+
+router.post("/updatepassword", verifyToken, async (req, res) => {
+  const { id, oldPassword, newPassword } = req.body;
+
+  try {
+    await updatepassword((req as unknown as { user: UserModel }).user.username, newPassword, oldPassword);
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
 });
 
 router.post("/AddReports", verifyToken, async (req, res) => {
@@ -64,30 +81,6 @@ router.post("/AddReports", verifyToken, async (req, res) => {
   res.json({ id: contract.id });
 });
 
-// router.post("/showReports", verifyToken, async (req, res) => {
-//   const { id } = req.body;
-//   const Contracts = await ContractsModel.findAll({
-//     where: { id: parseInt(id) },
-//     include: [
-//       {
-//         model: ReportsModel,
-//         required: true, // Use inner join
-//         include: [
-//           {
-//             model: ReportsPaymentModel,
-//             // required: true,
-//           },
-//           {
-//             model: ReportsReturnPaymentModel,
-//             // required: true,
-//           },
-//         ],
-//       },
-//     ],
-//   });
-
-//   res.json({ Contracts });
-// });
 router.post("/showReports", verifyToken, async (req, res) => {
   const { id } = req.body;
 
@@ -119,10 +112,12 @@ router.post("/showReports", verifyToken, async (req, res) => {
 });
 
 router.post("/listOfReports", verifyToken, async (req, res) => {
-  // const { page, limitPerPage } = req.body;
+  const { page, limitPerPage } = req.body;
+  // Fetch the total count of objects in the database
+  const totalCount = await ContractsModel.count();
   const Contracts = await ContractsModel.findAll({
-    // limit: limitPerPage,
-    // offset: (page - 1) * limitPerPage,
+    limit: limitPerPage,
+    offset: (page - 1) * limitPerPage,
     include: [
       {
         model: ReportsModel,
@@ -137,9 +132,10 @@ router.post("/listOfReports", verifyToken, async (req, res) => {
         ],
       },
     ],
+    order: [["id", "DESC"]],
   });
 
-  res.json({ Contracts });
+  res.json({ Contracts, totalCount });
 });
 
 router.post("/deleteReports", verifyToken, async (req, res) => {
@@ -194,7 +190,7 @@ function verifyToken(req: Request, res: Response, next: Function) {
     if (err) {
       throw new Error("Error : " + err);
     }
-    console.log(decoded);
+    (req as any).user = decoded;
   });
   next();
 }

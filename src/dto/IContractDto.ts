@@ -36,3 +36,9 @@ export interface IReportsReturnPaymentDto {
   dateReturnPayment: Date;
   returnPaymentDescription: string;
 }
+
+export interface IUpdatePasswordDto {
+  id: number;
+  oldPassword: string;
+  newPassword: string;
+}

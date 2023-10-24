@@ -20,31 +20,50 @@ const contracts_1 = __importDefault(require("../DB/schema/contracts"));
 const reports_1 = __importDefault(require("../DB/schema/reports"));
 const reportsPayment_1 = __importDefault(require("../DB/schema/reportsPayment"));
 const reportsReturnPayment_1 = __importDefault(require("../DB/schema/reportsReturnPayment"));
+const updatepassword_1 = __importDefault(require("../DB/updatepassword"));
+const users_1 = __importDefault(require("../DB/schema/users"));
 const router = express.Router();
-const usersAdmin = { username: "sahar", password: "z" };
 const secretKey = "PGS1401730";
-router.post("/login", (req, res, next) => {
+router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
     }
-    const users = {
-        username,
-        password,
-    };
-    if (users.username === usersAdmin.username && users.password === usersAdmin.password) {
-        const token = jsonwebtoken_1.default.sign(users, secretKey);
-        res.json({ token });
-        res.status(200).json({ message: "valid credentials" });
+    try {
+        // Use Sequelize to find a user with the provided username
+        const user = yield users_1.default.findOne({ where: { username } });
+        if (!user) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+        if (user.password === password) {
+            // User's credentials are valid; generate a JWT token
+            const token = jsonwebtoken_1.default.sign({ username }, secretKey);
+            res.status(200).json({ token, message: "Valid credentials" });
+        }
+        else {
+            // Password does not match
+            res.status(401).json({ message: "Invalid credentials" });
+        }
     }
-    else {
-        res.status(401).json({ message: "Invalid credentials" });
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
     }
-});
+}));
 router.post("/dashboard", verifyToken, (req, res) => {
     console.log("token has valid");
     res.json({ message: "Protected route accessed successfully" });
 });
+router.post("/updatepassword", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, oldPassword, newPassword } = req.body;
+    try {
+        yield (0, updatepassword_1.default)(req.user.username, newPassword, oldPassword);
+        res.status(200).json({ message: "Password updated successfully" });
+    }
+    catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}));
 router.post("/AddReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (typeof req.body !== "object" || req.body === null) {
         return res.status(400).json({ error: "Invalid payload" });
@@ -61,29 +80,6 @@ router.post("/AddReports", verifyToken, (req, res) => __awaiter(void 0, void 0, 
         return false;
     res.json({ id: contract.id });
 }));
-// router.post("/showReports", verifyToken, async (req, res) => {
-//   const { id } = req.body;
-//   const Contracts = await ContractsModel.findAll({
-//     where: { id: parseInt(id) },
-//     include: [
-//       {
-//         model: ReportsModel,
-//         required: true, // Use inner join
-//         include: [
-//           {
-//             model: ReportsPaymentModel,
-//             // required: true,
-//           },
-//           {
-//             model: ReportsReturnPaymentModel,
-//             // required: true,
-//           },
-//         ],
-//       },
-//     ],
-//   });
-//   res.json({ Contracts });
-// });
 router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
     // Find the contract with the given ID
@@ -111,10 +107,12 @@ router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0,
     res.json(result);
 }));
 router.post("/listOfReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // const { page, limitPerPage } = req.body;
+    const { page, limitPerPage } = req.body;
+    // Fetch the total count of objects in the database
+    const totalCount = yield contracts_1.default.count();
     const Contracts = yield contracts_1.default.findAll({
-        // limit: limitPerPage,
-        // offset: (page - 1) * limitPerPage,
+        limit: limitPerPage,
+        offset: (page - 1) * limitPerPage,
         include: [
             {
                 model: reports_1.default,
@@ -129,8 +127,9 @@ router.post("/listOfReports", verifyToken, (req, res) => __awaiter(void 0, void 
                 ],
             },
         ],
+        order: [["id", "DESC"]],
     });
-    res.json({ Contracts });
+    res.json({ Contracts, totalCount });
 }));
 router.post("/deleteReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
@@ -182,7 +181,7 @@ function verifyToken(req, res, next) {
         if (err) {
             throw new Error("Error : " + err);
         }
-        console.log(decoded);
+        req.user = decoded;
     });
     next();
 }
