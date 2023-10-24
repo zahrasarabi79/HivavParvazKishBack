@@ -10,6 +10,8 @@ import ReportsPaymentModel from "../DB/schema/reportsPayment";
 import ReportsReturnPaymentModel from "../DB/schema/reportsReturnPayment";
 import updatepassword from "../DB/updatepassword";
 import UserModel from "../DB/schema/users";
+import AuthorModel from "../DB/schema/event";
+import { Events, raiseEvent } from "../DB/raise-event";
 
 const router = express.Router();
 const secretKey = "PGS1401730";
@@ -36,7 +38,7 @@ router.post("/login", async (req, res) => {
 
     if (user.password === password) {
       // User's credentials are valid; generate a JWT token
-      const token = jwt.sign({ username }, secretKey);
+      const token = jwt.sign({ username, id: user.id }, secretKey);
       res.status(200).json({ token, message: "Valid credentials" });
     } else {
       // Password does not match
@@ -78,8 +80,27 @@ router.post("/AddReports", verifyToken, async (req, res) => {
   });
 
   if (!contract) return false;
+  await raiseEvent((req as any).user.id, contract.id, Events.ContractCreated);
   res.json({ id: contract.id });
 });
+// router.post("/AddReports", verifyToken, async (req, res) => {
+//   if (typeof req.body !== "object" || req.body === null) {
+//     return res.status(400).json({ error: "Invalid payload" });
+//   }
+
+//   const { dateContract, numContract, customer, reports, typeContract } = req.body as IContractDto;
+//   const contract = await insertData.insertData({
+
+//     dateContract,
+//     numContract,
+//     customer,
+//     reports,
+//     typeContract,
+//   });
+
+//   if (!contract) return false;
+//   res.json({ id: contract.id });
+// });
 
 router.post("/showReports", verifyToken, async (req, res) => {
   const { id } = req.body;
@@ -107,6 +128,7 @@ router.post("/showReports", verifyToken, async (req, res) => {
   const result = {
     Contracts: [contract],
   };
+  await raiseEvent((req as any).user.id, id, Events.ContractUpdated);
 
   res.json(result);
 });

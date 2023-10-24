@@ -1,6 +1,7 @@
 import { Table, Column, Model, HasMany } from "sequelize-typescript";
 import ReportsModel, { IReportsModel } from "./reports";
 import { IReportDto } from "../../dto/IContractDto";
+import AuthorModel from "./event";
 export interface IContractsModel {
   id?: number;
   numContract: string;
@@ -20,7 +21,7 @@ export default class ContractsModel extends Model<IContractsModel> {
 
   @Column
   public typeContract!: string;
-  
+
   @Column
   public customer!: string;
 
