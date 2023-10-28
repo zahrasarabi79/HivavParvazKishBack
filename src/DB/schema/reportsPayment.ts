@@ -8,6 +8,7 @@ export interface IReportsPayment {
   datepayment: Date;
   paymentDescription: string;
   contractId: number;
+  [Key: string]: number | Date | string;
 }
 @Table({
   timestamps: false,

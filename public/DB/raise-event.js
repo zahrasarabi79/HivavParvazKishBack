@@ -14,16 +14,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.raiseEvent = exports.Events = void 0;
 const event_1 = __importDefault(require("./schema/event"));
-var Events;
-(function (Events) {
-    Events["ContractCreated"] = "contract_created";
-    Events["ContractUpdated"] = "contract_updated";
-    Events["ContractDeleted"] = "contract_deleted";
-})(Events = exports.Events || (exports.Events = {}));
-function raiseEvent(userId, contractId, event) {
+exports.Events = {
+    ContractCreated: "contract_created",
+    ReportCreated: "Report_created",
+    ReportReturnPaymentUpdated: (ReportIndex, reportspayment, property) => `Report[${ReportIndex}]_returnReportspayment[${reportspayment}_updated_${property}]`,
+    ReportPaymentCreated: (ReportIndex) => `ReportPayment_Report[${ReportIndex}]_Created`,
+    ReportPaymentDeleted: (ReportIndex) => `ReportPayment_Report[${ReportIndex}]_Deleted`,
+    ReportPaymentUpdated: (ReportIndex, reportspayment, property) => `Report[${ReportIndex}]_reportspayment[${reportspayment}]_updated_${property}`,
+    ReportDeleted: "Report_deleted",
+    ContractUpdated: "contract_updated",
+    ContractDeleted: "contract_deleted",
+};
+function raiseEvent(userId, contractId, eventName) {
     return __awaiter(this, void 0, void 0, function* () {
         yield event_1.default.create({
-            eventName: event,
+            eventName,
             userId,
             contractId,
         });

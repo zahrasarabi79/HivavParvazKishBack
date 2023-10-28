@@ -1,3 +1,4 @@
+import ReportsPaymentModel from "../DB/schema/reportsPayment";
 import { IReportsReturnPayment } from "../DB/schema/reportsReturnPayment";
 
 export interface IContractDto {
@@ -28,6 +29,7 @@ export interface IReportPaymentDto {
   payments: string;
   datepayment: Date;
   paymentDescription: string;
+  [Key: string]: string | Date;
 }
 
 export interface IReportsReturnPaymentDto {
@@ -35,6 +37,7 @@ export interface IReportsReturnPaymentDto {
   returnPayments: string;
   dateReturnPayment: Date;
   returnPaymentDescription: string;
+  [key: string]: string | Date;
 }
 
 export interface IUpdatePasswordDto {
@@ -42,3 +45,5 @@ export interface IUpdatePasswordDto {
   oldPassword: string;
   newPassword: string;
 }
+
+export interface ReportsPaymentModelObj extends ReportsPaymentModel {}

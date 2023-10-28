@@ -23,6 +23,7 @@ const reportsReturnPayment_1 = __importDefault(require("../DB/schema/reportsRetu
 const updatepassword_1 = __importDefault(require("../DB/updatepassword"));
 const users_1 = __importDefault(require("../DB/schema/users"));
 const raise_event_1 = require("../DB/raise-event");
+const eventStory_1 = require("../DB/eventStory");
 const router = express.Router();
 const secretKey = "PGS1401730";
 router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -82,21 +83,6 @@ router.post("/AddReports", verifyToken, (req, res) => __awaiter(void 0, void 0, 
     yield (0, raise_event_1.raiseEvent)(req.user.id, contract.id, raise_event_1.Events.ContractCreated);
     res.json({ id: contract.id });
 }));
-// router.post("/AddReports", verifyToken, async (req, res) => {
-//   if (typeof req.body !== "object" || req.body === null) {
-//     return res.status(400).json({ error: "Invalid payload" });
-//   }
-//   const { dateContract, numContract, customer, reports, typeContract } = req.body as IContractDto;
-//   const contract = await insertData.insertData({
-//     dateContract,
-//     numContract,
-//     customer,
-//     reports,
-//     typeContract,
-//   });
-//   if (!contract) return false;
-//   res.json({ id: contract.id });
-// });
 router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
     // Find the contract with the given ID
@@ -121,7 +107,6 @@ router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0,
     const result = {
         Contracts: [contract],
     };
-    yield (0, raise_event_1.raiseEvent)(req.user.id, id, raise_event_1.Events.ContractUpdated);
     res.json(result);
 }));
 router.post("/listOfReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -158,7 +143,19 @@ router.post("/deleteReports", verifyToken, (req, res) => __awaiter(void 0, void 
 }));
 router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id, numContract, dateContract, typeContract, reports, customer } = req.body;
-    console.log(req.body);
+    const existingReports = yield reports_1.default.findAll({
+        where: { contractId: id },
+        include: [
+            {
+                model: reportsPayment_1.default,
+                required: false,
+            },
+            {
+                model: reportsReturnPayment_1.default,
+                required: false,
+            },
+        ],
+    });
     yield updatecontract_1.default.updateData({
         id,
         numContract,
@@ -167,7 +164,7 @@ router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 
         reports,
         customer,
     });
-    const findContract = yield contracts_1.default.findOne({
+    const FindContract = yield contracts_1.default.findOne({
         where: { id: id },
         include: [
             {
@@ -186,7 +183,11 @@ router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 
             },
         ],
     });
-    res.json({ findContract });
+    const existingReport = existingReports;
+    const updatedReports = reports;
+    const UpdateEvents = (0, eventStory_1.updatedEventStory)(updatedReports, existingReport);
+    UpdateEvents.map((event) => __awaiter(void 0, void 0, void 0, function* () { return yield (0, raise_event_1.raiseEvent)(req.user.id, id, event); }));
+    res.json({ FindContract });
 }));
 // Token verification middleware
 function verifyToken(req, res, next) {

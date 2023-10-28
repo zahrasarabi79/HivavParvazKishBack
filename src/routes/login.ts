@@ -10,8 +10,8 @@ import ReportsPaymentModel from "../DB/schema/reportsPayment";
 import ReportsReturnPaymentModel from "../DB/schema/reportsReturnPayment";
 import updatepassword from "../DB/updatepassword";
 import UserModel from "../DB/schema/users";
-import AuthorModel from "../DB/schema/event";
 import { Events, raiseEvent } from "../DB/raise-event";
+import { updatedEventStory } from "../DB/eventStory";
 
 const router = express.Router();
 const secretKey = "PGS1401730";
@@ -83,24 +83,6 @@ router.post("/AddReports", verifyToken, async (req, res) => {
   await raiseEvent((req as any).user.id, contract.id, Events.ContractCreated);
   res.json({ id: contract.id });
 });
-// router.post("/AddReports", verifyToken, async (req, res) => {
-//   if (typeof req.body !== "object" || req.body === null) {
-//     return res.status(400).json({ error: "Invalid payload" });
-//   }
-
-//   const { dateContract, numContract, customer, reports, typeContract } = req.body as IContractDto;
-//   const contract = await insertData.insertData({
-
-//     dateContract,
-//     numContract,
-//     customer,
-//     reports,
-//     typeContract,
-//   });
-
-//   if (!contract) return false;
-//   res.json({ id: contract.id });
-// });
 
 router.post("/showReports", verifyToken, async (req, res) => {
   const { id } = req.body;
@@ -128,7 +110,6 @@ router.post("/showReports", verifyToken, async (req, res) => {
   const result = {
     Contracts: [contract],
   };
-  await raiseEvent((req as any).user.id, id, Events.ContractUpdated);
 
   res.json(result);
 });
@@ -171,7 +152,19 @@ router.post("/deleteReports", verifyToken, async (req, res) => {
 
 router.post("/updateReports", verifyToken, async (req, res) => {
   const { id, numContract, dateContract, typeContract, reports, customer }: IUpdateContractDto = req.body;
-  console.log(req.body);
+  const existingReports = await ReportsModel.findAll({
+    where: { contractId: id },
+    include: [
+      {
+        model: ReportsPaymentModel,
+        required: false,
+      },
+      {
+        model: ReportsReturnPaymentModel,
+        required: false,
+      },
+    ],
+  });
   await updatecontract.updateData({
     id,
     numContract,
@@ -180,8 +173,7 @@ router.post("/updateReports", verifyToken, async (req, res) => {
     reports,
     customer,
   });
-
-  const findContract = await ContractsModel.findOne({
+  const FindContract = await ContractsModel.findOne({
     where: { id: id },
     include: [
       {
@@ -200,8 +192,13 @@ router.post("/updateReports", verifyToken, async (req, res) => {
       },
     ],
   });
-  res.json({ findContract });
+  const existingReport = existingReports;
+  const updatedReports = reports;
+  const UpdateEvents: string[] = updatedEventStory(updatedReports, existingReport);
+  UpdateEvents.map(async (event: any) => await raiseEvent((req as any).user.id, id, event));
+  res.json({ FindContract });
 });
+
 // Token verification middleware
 function verifyToken(req: Request, res: Response, next: Function) {
   const token = req.headers.authorization?.split(" ")[1];
