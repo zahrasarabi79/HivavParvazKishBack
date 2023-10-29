@@ -1,7 +1,8 @@
-import { Table, Column, Model, HasMany } from "sequelize-typescript";
+import { Table, Column, Model, HasMany, BelongsToMany } from "sequelize-typescript";
 import ReportsModel, { IReportsModel } from "./reports";
 import { IReportDto } from "../../dto/IContractDto";
 import AuthorModel from "./event";
+
 export interface IContractsModel {
   id?: number;
   numContract: string;

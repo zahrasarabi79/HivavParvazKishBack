@@ -24,6 +24,8 @@ const updatepassword_1 = __importDefault(require("../DB/updatepassword"));
 const users_1 = __importDefault(require("../DB/schema/users"));
 const raise_event_1 = require("../DB/raise-event");
 const eventStory_1 = require("../DB/eventStory");
+const event_1 = __importDefault(require("../DB/schema/event"));
+const sequelize_1 = require("sequelize");
 const router = express.Router();
 const secretKey = "PGS1401730";
 router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -134,6 +136,39 @@ router.post("/listOfReports", verifyToken, (req, res) => __awaiter(void 0, void 
     });
     res.json({ Contracts, totalCount });
 }));
+router.post("/listOfSystemHistory", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { page, limitPerPage } = req.body;
+    const totalCount = yield event_1.default.count();
+    const Events = yield event_1.default.findAll({
+        limit: limitPerPage,
+        offset: (page - 1) * limitPerPage,
+        order: [["id", "DESC"]],
+    });
+    const users = yield users_1.default.findAll({
+        where: {
+            id: { [sequelize_1.Op.in]: [...new Set(Events.map((event) => event.userId))] },
+        },
+    });
+    const contracts = yield contracts_1.default.findAll({
+        where: {
+            id: { [sequelize_1.Op.in]: [...new Set(Events.map((event) => event.contractId))] },
+        },
+    });
+    res.json({
+        Events: Events.map((event) => {
+            const username = users.find((u) => u.id === event.userId).username;
+            const numContract = contracts.find((c) => c.id === event.contractId).numContract;
+            return {
+                id: event.id,
+                eventName: event.eventName,
+                createdAt: event.createdAt,
+                username,
+                numContract,
+            };
+        }),
+        totalCount,
+    });
+}));
 router.post("/deleteReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
     yield contracts_1.default.destroy({
@@ -193,7 +228,9 @@ router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 
 function verifyToken(req, res, next) {
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
-    if (!token) {
+    // console.log(token);
+    if (!(token === null || token === void 0 ? void 0 : token.length)) {
+        console.log("fgdfg");
         throw new Error("Authorization token is required");
     }
     jsonwebtoken_1.default.verify(token, secretKey, function (err, decoded) {

@@ -17,13 +17,18 @@ const event_1 = __importDefault(require("./schema/event"));
 exports.Events = {
     ContractCreated: "contract_created",
     ReportCreated: "Report_created",
-    ReportReturnPaymentUpdated: (ReportIndex, reportspayment, property) => `Report[${ReportIndex}]_returnReportspayment[${reportspayment}_updated_${property}]`,
-    ReportPaymentCreated: (ReportIndex) => `ReportPayment_Report[${ReportIndex}]_Created`,
-    ReportPaymentDeleted: (ReportIndex) => `ReportPayment_Report[${ReportIndex}]_Deleted`,
-    ReportPaymentUpdated: (ReportIndex, reportspayment, property) => `Report[${ReportIndex}]_reportspayment[${reportspayment}]_updated_${property}`,
     ReportDeleted: "Report_deleted",
     ContractUpdated: "contract_updated",
     ContractDeleted: "contract_deleted",
+    ReportReturnPaymentUpdated: (ReportIndex, reportspayment, property) => `Report[${ReportIndex}]_returnReportspayment[${reportspayment}]_updated_${property}`,
+    ReportPaymentCreated: (ReportIndex) => `ReportPayment_Report[${ReportIndex}]_Created`,
+    ReportTotalCost: (ReportIndex) => `TotalCost_Report[${ReportIndex}]_Updated`,
+    ReportPresenter: (ReportIndex) => `Presenter_Report[${ReportIndex}]_Updated`,
+    ReportReportDescription: (ReportIndex) => `ReportDescription_Report[${ReportIndex}]_Updated`,
+    ReportReturnPaymentCreated: (ReportIndex) => `ReportReturnPayment_Report[${ReportIndex}]_Created`,
+    ReportPaymentDeleted: (ReportIndex) => `ReportPayment_Report[${ReportIndex}]_Deleted`,
+    ReportReturnPaymentDeleted: (ReportIndex) => `ReportReturnPayment_Report[${ReportIndex}]_Deleted`,
+    ReportPaymentUpdated: (ReportIndex, reportspayment, property) => `Report[${ReportIndex}]_reportspayment[${reportspayment}]_updated_${property}`,
 };
 function raiseEvent(userId, contractId, eventName) {
     return __awaiter(this, void 0, void 0, function* () {

@@ -1,4 +1,5 @@
-import { Table, Column, Model } from "sequelize-typescript";
+import { Table, Column, Model, HasMany } from "sequelize-typescript";
+import Event from "./event";
 
 export interface IUserModel {
   id?: number;

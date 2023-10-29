@@ -12,6 +12,8 @@ import updatepassword from "../DB/updatepassword";
 import UserModel from "../DB/schema/users";
 import { Events, raiseEvent } from "../DB/raise-event";
 import { updatedEventStory } from "../DB/eventStory";
+import Event from "../DB/schema/event";
+import { Op } from "sequelize";
 
 const router = express.Router();
 const secretKey = "PGS1401730";
@@ -140,6 +142,40 @@ router.post("/listOfReports", verifyToken, async (req, res) => {
 
   res.json({ Contracts, totalCount });
 });
+router.post("/listOfSystemHistory", verifyToken, async (req, res) => {
+  const { page, limitPerPage } = req.body;
+  const totalCount = await Event.count();
+  const Events = await Event.findAll({
+    limit: limitPerPage,
+    offset: (page - 1) * limitPerPage,
+    order: [["id", "DESC"]],
+  });
+  const users = await UserModel.findAll({
+    where: {
+      id: { [Op.in]: [...new Set(Events.map((event) => event.userId))] as any[] },
+    },
+  });
+  const contracts = await ContractsModel.findAll({
+    where: {
+      id: { [Op.in]: [...new Set(Events.map((event) => event.contractId))] as any[] },
+    },
+  });
+
+  res.json({
+    Events: Events.map((event: any) => {
+      const username = users.find((u) => u.id === event.userId)!.username;
+      const numContract = contracts.find((c) => c.id === event.contractId)!.numContract;
+      return {
+        id: event.id,
+        eventName: event.eventName,
+        createdAt: event.createdAt,
+        username,
+        numContract,
+      };
+    }),
+    totalCount,
+  });
+});
 
 router.post("/deleteReports", verifyToken, async (req, res) => {
   const { id } = req.body;
@@ -202,7 +238,11 @@ router.post("/updateReports", verifyToken, async (req, res) => {
 // Token verification middleware
 function verifyToken(req: Request, res: Response, next: Function) {
   const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
+  // console.log(token);
+
+  if (!token?.length) {
+    console.log("fgdfg");
+
     throw new Error("Authorization token is required");
   }
   jwt.verify(token, secretKey, function (err, decoded) {
