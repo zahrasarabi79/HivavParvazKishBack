@@ -156,7 +156,9 @@ router.post("/listOfSystemHistory", verifyToken, (req, res) => __awaiter(void 0,
     });
     res.json({
         Events: Events.map((event) => {
-            const username = users.find((u) => u.id === event.userId).username;
+            // console.log(users.find((u) => u.id === event.userId)?.username);
+            var _a;
+            const username = (_a = users.find((u) => u.id === event.userId)) === null || _a === void 0 ? void 0 : _a.username;
             const numContract = contracts.find((c) => c.id === event.contractId).numContract;
             return {
                 id: event.id,
@@ -178,19 +180,38 @@ router.post("/deleteReports", verifyToken, (req, res) => __awaiter(void 0, void 
 }));
 router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id, numContract, dateContract, typeContract, reports, customer } = req.body;
-    const existingReports = yield reports_1.default.findAll({
-        where: { contractId: id },
+    const existedContract = yield contracts_1.default.findOne({
+        where: { id: id },
         include: [
             {
-                model: reportsPayment_1.default,
-                required: false,
-            },
-            {
-                model: reportsReturnPayment_1.default,
-                required: false,
+                model: reports_1.default,
+                required: true,
+                include: [
+                    {
+                        model: reportsPayment_1.default,
+                        required: false,
+                    },
+                    {
+                        model: reportsReturnPayment_1.default,
+                        required: false,
+                    },
+                ],
             },
         ],
     });
+    // const existingReports = await ReportsModel.findAll({
+    //   where: { contractId: id },
+    //   include: [
+    //     {
+    //       model: ReportsPaymentModel,
+    //       required: false,
+    //     },
+    //     {
+    //       model: ReportsReturnPaymentModel,
+    //       required: false,
+    //     },
+    //   ],
+    // });
     yield updatecontract_1.default.updateData({
         id,
         numContract,
@@ -218,9 +239,9 @@ router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 
             },
         ],
     });
-    const existingReport = existingReports;
-    const updatedReports = reports;
-    const UpdateEvents = (0, eventStory_1.updatedEventStory)(updatedReports, existingReport);
+    // const existingReport = existingReports;
+    const updatedReports = { id, numContract, dateContract, typeContract, reports, customer };
+    const UpdateEvents = (0, eventStory_1.updatedEventStory)(updatedReports, existedContract);
     UpdateEvents.map((event) => __awaiter(void 0, void 0, void 0, function* () { return yield (0, raise_event_1.raiseEvent)(req.user.id, id, event); }));
     res.json({ FindContract });
 }));

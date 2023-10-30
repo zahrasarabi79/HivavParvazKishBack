@@ -6,10 +6,14 @@ type Events = {
   ReportDeleted: string;
   ContractUpdated: string;
   ContractDeleted: string;
-  ReportPaymentCreated: (ReportIndex: number) => string;
-  ReportReturnPaymentCreated: (ReportIndex: number) => string;
-  ReportPaymentDeleted: (ReportIndex: number) => string;
-  ReportReturnPaymentDeleted: (ReportIndex: number) => string;
+  ContractCustomerUpdated: string;
+  ContractDateContractUpdated: string;
+  ContractNumContractUpdated: string;
+  ContractTypeContractUpdated: string;
+  ReportPaymentCreated: (ReportIndex: number, reportspayment: number) => string;
+  ReportReturnPaymentCreated: (ReportIndex: number, ReportReturnPayment: number) => string;
+  ReportPaymentDeleted: (ReportIndex: number, reportspayment: number) => string;
+  ReportReturnPaymentDeleted: (ReportIndex: number, ReportReturnPayment: number) => string;
   ReportPaymentUpdated: (ReportIndex: number, reportspayment: number, property: string) => string;
   ReportReturnPaymentUpdated: (ReportIndex: number, reportspayment: number, property: string) => string;
   ReportTotalCost: (ReportIndex: number) => string;
@@ -23,14 +27,18 @@ export const Events: Events = {
   ReportDeleted: "Report_deleted",
   ContractUpdated: "contract_updated",
   ContractDeleted: "contract_deleted",
+  ContractCustomerUpdated: "contract_Customer_Updated",
+  ContractDateContractUpdated: "contract_DateContract_Updated",
+  ContractNumContractUpdated: "contract_NumContract_Updated",
+  ContractTypeContractUpdated: "contract_TypeContrac_Updated",
   ReportReturnPaymentUpdated: (ReportIndex, reportspayment, property) => `Report[${ReportIndex}]_returnReportspayment[${reportspayment}]_updated_${property}`,
-  ReportPaymentCreated: (ReportIndex) => `ReportPayment_Report[${ReportIndex}]_Created`,
+  ReportPaymentCreated: (ReportIndex, reportspayment) => `ReportPaymen[${reportspayment}]_Report[${ReportIndex}]_Created`,
   ReportTotalCost: (ReportIndex) => `TotalCost_Report[${ReportIndex}]_Updated`,
   ReportPresenter: (ReportIndex) => `Presenter_Report[${ReportIndex}]_Updated`,
   ReportReportDescription: (ReportIndex) => `ReportDescription_Report[${ReportIndex}]_Updated`,
-  ReportReturnPaymentCreated: (ReportIndex) => `ReportReturnPayment_Report[${ReportIndex}]_Created`,
-  ReportPaymentDeleted: (ReportIndex) => `ReportPayment_Report[${ReportIndex}]_Deleted`,
-  ReportReturnPaymentDeleted: (ReportIndex) => `ReportReturnPayment_Report[${ReportIndex}]_Deleted`,
+  ReportReturnPaymentCreated: (ReportIndex , ReportReturnPayment) =>`Report[${ReportIndex}]_ReportReturnPayment[${ReportReturnPayment}]_Created`,
+  ReportPaymentDeleted: (ReportIndex, reportspayment) => `Report[${ReportIndex}]_ReportPaymen[${reportspayment}]_Deleted`,
+  ReportReturnPaymentDeleted: (ReportIndex, ReportReturnPayment) => `Report[${ReportIndex}]_ReportReturnPayment[${ReportReturnPayment}]_Deleted`,
   ReportPaymentUpdated: (ReportIndex, reportspayment, property) => `Report[${ReportIndex}]_reportspayment[${reportspayment}]_updated_${property}`,
 };
 

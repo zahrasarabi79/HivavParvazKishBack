@@ -14,6 +14,7 @@ import { Events, raiseEvent } from "../DB/raise-event";
 import { updatedEventStory } from "../DB/eventStory";
 import Event from "../DB/schema/event";
 import { Op } from "sequelize";
+import { userInfo } from "os";
 
 const router = express.Router();
 const secretKey = "PGS1401730";
@@ -163,7 +164,9 @@ router.post("/listOfSystemHistory", verifyToken, async (req, res) => {
 
   res.json({
     Events: Events.map((event: any) => {
-      const username = users.find((u) => u.id === event.userId)!.username;
+      // console.log(users.find((u) => u.id === event.userId)?.username);
+
+      const username = users.find((u) => u.id === event.userId)?.username;
       const numContract = contracts.find((c) => c.id === event.contractId)!.numContract;
       return {
         id: event.id,
@@ -188,19 +191,38 @@ router.post("/deleteReports", verifyToken, async (req, res) => {
 
 router.post("/updateReports", verifyToken, async (req, res) => {
   const { id, numContract, dateContract, typeContract, reports, customer }: IUpdateContractDto = req.body;
-  const existingReports = await ReportsModel.findAll({
-    where: { contractId: id },
+  const existedContract = await ContractsModel.findOne({
+    where: { id: id },
     include: [
       {
-        model: ReportsPaymentModel,
-        required: false,
-      },
-      {
-        model: ReportsReturnPaymentModel,
-        required: false,
+        model: ReportsModel,
+        required: true, // Use inner join
+        include: [
+          {
+            model: ReportsPaymentModel,
+            required: false,
+          },
+          {
+            model: ReportsReturnPaymentModel,
+            required: false,
+          },
+        ],
       },
     ],
   });
+  // const existingReports = await ReportsModel.findAll({
+  //   where: { contractId: id },
+  //   include: [
+  //     {
+  //       model: ReportsPaymentModel,
+  //       required: false,
+  //     },
+  //     {
+  //       model: ReportsReturnPaymentModel,
+  //       required: false,
+  //     },
+  //   ],
+  // });
   await updatecontract.updateData({
     id,
     numContract,
@@ -228,9 +250,9 @@ router.post("/updateReports", verifyToken, async (req, res) => {
       },
     ],
   });
-  const existingReport = existingReports;
-  const updatedReports = reports;
-  const UpdateEvents: string[] = updatedEventStory(updatedReports, existingReport);
+  // const existingReport = existingReports;
+  const updatedReports = { id, numContract, dateContract, typeContract, reports, customer };
+  const UpdateEvents: string[] = updatedEventStory(updatedReports, existedContract);
   UpdateEvents.map(async (event: any) => await raiseEvent((req as any).user.id, id, event));
   res.json({ FindContract });
 });
@@ -249,6 +271,7 @@ function verifyToken(req: Request, res: Response, next: Function) {
     if (err) {
       throw new Error("Error : " + err);
     }
+
     (req as any).user = decoded;
   });
   next();
