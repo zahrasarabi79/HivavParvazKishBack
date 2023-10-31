@@ -1,10 +1,10 @@
-import { Table, Column, Model, HasMany } from "sequelize-typescript";
-import Event from "./event";
+import { Table, Column, Model } from "sequelize-typescript";
 
 export interface IUserModel {
   id?: number;
   username: string;
   password: string;
+  name: string;
 }
 
 @Table({
@@ -17,4 +17,7 @@ export default class UserModel extends Model<IUserModel> {
 
   @Column
   public password!: string;
+  
+  @Column
+  public name!: string;
 }

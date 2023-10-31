@@ -20,6 +20,10 @@ __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
 ], UserModel.prototype, "password", void 0);
+__decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", String)
+], UserModel.prototype, "name", void 0);
 UserModel = __decorate([
     (0, sequelize_typescript_1.Table)({
         tableName: "users",

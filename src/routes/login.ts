@@ -56,7 +56,28 @@ router.post("/dashboard", verifyToken, (req, res) => {
   console.log("token has valid");
   res.json({ message: "Protected route accessed successfully" });
 });
+// router.post("/profileinformation", verifyToken, (req, res) => {
+//   const username = (req as any).user.username;
 
+//   // You can now use the username in your route handler
+//   res.json({ username });
+// });
+router.post("/profileinformation", verifyToken, async (req, res) => {
+  const userId = (req as any).user.id;
+  try {
+    const user = await UserModel.findOne({
+      where: { id: userId },
+      attributes: ["name"], 
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ name: user.name });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 router.post("/updatepassword", verifyToken, async (req, res) => {
   const { id, oldPassword, newPassword } = req.body;
 
@@ -210,19 +231,7 @@ router.post("/updateReports", verifyToken, async (req, res) => {
       },
     ],
   });
-  // const existingReports = await ReportsModel.findAll({
-  //   where: { contractId: id },
-  //   include: [
-  //     {
-  //       model: ReportsPaymentModel,
-  //       required: false,
-  //     },
-  //     {
-  //       model: ReportsReturnPaymentModel,
-  //       required: false,
-  //     },
-  //   ],
-  // });
+
   await updatecontract.updateData({
     id,
     numContract,
@@ -250,7 +259,6 @@ router.post("/updateReports", verifyToken, async (req, res) => {
       },
     ],
   });
-  // const existingReport = existingReports;
   const updatedReports = { id, numContract, dateContract, typeContract, reports, customer };
   const UpdateEvents: string[] = updatedEventStory(updatedReports, existedContract);
   UpdateEvents.map(async (event: any) => await raiseEvent((req as any).user.id, id, event));

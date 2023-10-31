@@ -58,6 +58,28 @@ router.post("/dashboard", verifyToken, (req, res) => {
     console.log("token has valid");
     res.json({ message: "Protected route accessed successfully" });
 });
+// router.post("/profileinformation", verifyToken, (req, res) => {
+//   const username = (req as any).user.username;
+//   // You can now use the username in your route handler
+//   res.json({ username });
+// });
+router.post("/profileinformation", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    try {
+        const user = yield users_1.default.findOne({
+            where: { id: userId },
+            attributes: ["name"],
+        });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json({ name: user.name });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+}));
 router.post("/updatepassword", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id, oldPassword, newPassword } = req.body;
     try {
@@ -199,19 +221,6 @@ router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 
             },
         ],
     });
-    // const existingReports = await ReportsModel.findAll({
-    //   where: { contractId: id },
-    //   include: [
-    //     {
-    //       model: ReportsPaymentModel,
-    //       required: false,
-    //     },
-    //     {
-    //       model: ReportsReturnPaymentModel,
-    //       required: false,
-    //     },
-    //   ],
-    // });
     yield updatecontract_1.default.updateData({
         id,
         numContract,
@@ -239,7 +248,6 @@ router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 
             },
         ],
     });
-    // const existingReport = existingReports;
     const updatedReports = { id, numContract, dateContract, typeContract, reports, customer };
     const UpdateEvents = (0, eventStory_1.updatedEventStory)(updatedReports, existedContract);
     UpdateEvents.map((event) => __awaiter(void 0, void 0, void 0, function* () { return yield (0, raise_event_1.raiseEvent)(req.user.id, id, event); }));
