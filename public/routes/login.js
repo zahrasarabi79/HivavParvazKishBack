@@ -26,6 +26,7 @@ const raise_event_1 = require("../DB/raise-event");
 const eventStory_1 = require("../DB/eventStory");
 const event_1 = __importDefault(require("../DB/schema/event"));
 const sequelize_1 = require("sequelize");
+const insertUser_1 = __importDefault(require("../DB/insertUser"));
 const router = express.Router();
 const secretKey = "PGS1401730";
 router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -107,6 +108,21 @@ router.post("/AddReports", verifyToken, (req, res) => __awaiter(void 0, void 0, 
     yield (0, raise_event_1.raiseEvent)(req.user.id, contract.id, raise_event_1.Events.ContractCreated);
     res.json({ id: contract.id });
 }));
+router.post("/AddUsers", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (typeof req.body !== "object" || req.body === null) {
+        return res.status(400).json({ error: "Invalid User" });
+    }
+    const { name, username, password, role } = req.body;
+    const user = yield insertUser_1.default.insertUser({
+        name,
+        username,
+        password,
+        role,
+    });
+    if (!user)
+        return false;
+    res.json({ user });
+}));
 router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
     // Find the contract with the given ID
@@ -180,7 +196,7 @@ router.post("/listOfSystemHistory", verifyToken, (req, res) => __awaiter(void 0,
         Events: Events.map((event) => {
             // console.log(users.find((u) => u.id === event.userId)?.username);
             var _a;
-            const username = (_a = users.find((u) => u.id === event.userId)) === null || _a === void 0 ? void 0 : _a.username;
+            const username = (_a = users.find((u) => u.id === event.userId)) === null || _a === void 0 ? void 0 : _a.name;
             const numContract = contracts.find((c) => c.id === event.contractId).numContract;
             return {
                 id: event.id,

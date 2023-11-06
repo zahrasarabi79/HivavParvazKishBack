@@ -5,6 +5,7 @@ export interface IUserModel {
   username: string;
   password: string;
   name: string;
+  role: string;
 }
 
 @Table({
@@ -17,7 +18,10 @@ export default class UserModel extends Model<IUserModel> {
 
   @Column
   public password!: string;
-  
+
   @Column
   public name!: string;
+
+  @Column
+  public role!: string;
 }

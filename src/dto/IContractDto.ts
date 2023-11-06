@@ -8,6 +8,12 @@ export interface IContractDto {
   typeContract: string;
   reports: IReportDto[];
 }
+export interface IUserDto {
+  name: string;
+  username: string;
+  password: string;
+  role: string;
+}
 export interface IUpdateContractDto {
   id: number;
   numContract: string;

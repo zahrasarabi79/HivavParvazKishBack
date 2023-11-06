@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import insertData from "../DB/insertdata";
 import updatecontract from "../DB/updatecontract";
 import jwt from "jsonwebtoken";
-import { IContractDto, IUpdateContractDto } from "../dto/IContractDto";
+import { IContractDto, IUpdateContractDto, IUserDto } from "../dto/IContractDto";
 import ContractsModel from "../DB/schema/contracts";
 import ReportsModel from "../DB/schema/reports";
 import ReportsPaymentModel from "../DB/schema/reportsPayment";
@@ -15,6 +15,7 @@ import { updatedEventStory } from "../DB/eventStory";
 import Event from "../DB/schema/event";
 import { Op } from "sequelize";
 import { userInfo } from "os";
+import insertUser from "../DB/insertUser";
 
 const router = express.Router();
 const secretKey = "PGS1401730";
@@ -67,7 +68,7 @@ router.post("/profileinformation", verifyToken, async (req, res) => {
   try {
     const user = await UserModel.findOne({
       where: { id: userId },
-      attributes: ["name"], 
+      attributes: ["name"],
     });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -107,7 +108,22 @@ router.post("/AddReports", verifyToken, async (req, res) => {
   await raiseEvent((req as any).user.id, contract.id, Events.ContractCreated);
   res.json({ id: contract.id });
 });
+router.post("/AddUsers", verifyToken, async (req, res) => {
+  if (typeof req.body !== "object" || req.body === null) {
+    return res.status(400).json({ error: "Invalid User" });
+  }
+  const { name, username, password, role } = req.body as IUserDto;
+  const user = await insertUser.insertUser({
+    name,
+    username,
+    password,
+    role,
+  });
 
+  if (!user) return false;
+
+  res.json({ user });
+});
 router.post("/showReports", verifyToken, async (req, res) => {
   const { id } = req.body;
 
@@ -187,7 +203,7 @@ router.post("/listOfSystemHistory", verifyToken, async (req, res) => {
     Events: Events.map((event: any) => {
       // console.log(users.find((u) => u.id === event.userId)?.username);
 
-      const username = users.find((u) => u.id === event.userId)?.username;
+      const username = users.find((u) => u.id === event.userId)?.name;
       const numContract = contracts.find((c) => c.id === event.contractId)!.numContract;
       return {
         id: event.id,
