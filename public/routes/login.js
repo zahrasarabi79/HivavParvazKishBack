@@ -27,6 +27,8 @@ const eventStory_1 = require("../DB/eventStory");
 const event_1 = __importDefault(require("../DB/schema/event"));
 const sequelize_1 = require("sequelize");
 const insertUser_1 = __importDefault(require("../DB/insertUser"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const updateUser_1 = __importDefault(require("../DB/updateUser"));
 const router = express.Router();
 const secretKey = "PGS1401730";
 router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -40,15 +42,21 @@ router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (!user) {
             return res.status(401).json({ message: "Invalid credentials" });
         }
-        if (user.password === password) {
-            // User's credentials are valid; generate a JWT token
-            const token = jsonwebtoken_1.default.sign({ username, id: user.id }, secretKey);
-            res.status(200).json({ token, message: "Valid credentials" });
-        }
-        else {
-            // Password does not match
-            res.status(401).json({ message: "Invalid credentials" });
-        }
+        bcrypt_1.default.compare(password, user.password, (err, result) => {
+            if (err) {
+                console.error(err, "eeee");
+                // Handle the error
+            }
+            else if (result) {
+                // User's credentials are valid; generate a JWT token
+                const token = jsonwebtoken_1.default.sign({ username, id: user.id }, secretKey);
+                res.status(200).json({ token, message: "Valid credentials" });
+            }
+            else {
+                // Password is incorrect
+                res.status(401).json({ message: "Password is incorrect" });
+            }
+        });
     }
     catch (error) {
         console.error(error);
@@ -59,22 +67,17 @@ router.post("/dashboard", verifyToken, (req, res) => {
     console.log("token has valid");
     res.json({ message: "Protected route accessed successfully" });
 });
-// router.post("/profileinformation", verifyToken, (req, res) => {
-//   const username = (req as any).user.username;
-//   // You can now use the username in your route handler
-//   res.json({ username });
-// });
 router.post("/profileinformation", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     try {
         const user = yield users_1.default.findOne({
             where: { id: userId },
-            attributes: ["name"],
+            attributes: ["name", "role"],
         });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        res.json({ name: user.name });
+        res.json({ name: user.name, role: user.role });
     }
     catch (error) {
         console.error(error);
@@ -113,15 +116,61 @@ router.post("/AddUsers", verifyToken, (req, res) => __awaiter(void 0, void 0, vo
         return res.status(400).json({ error: "Invalid User" });
     }
     const { name, username, password, role } = req.body;
-    const user = yield insertUser_1.default.insertUser({
-        name,
-        username,
-        password,
-        role,
+    const existingUser = yield users_1.default.findOne({ where: { username } });
+    if (existingUser) {
+        return res.status(400).json({ error: "نام کاربری معتبر نمی باشد" });
+    }
+    const requestingUser = yield users_1.default.findOne({ where: { id: req.user.id } });
+    if ((requestingUser === null || requestingUser === void 0 ? void 0 : requestingUser.role) === "مدیر") {
+        // Hash the password using bcrypt
+        bcrypt_1.default.hash(password, 10, (hashErr, hashedPassword) => __awaiter(void 0, void 0, void 0, function* () {
+            if (hashErr) {
+                console.error(hashErr);
+                return res.status(500).json({ error: "Error hashing the password" });
+            }
+            // Create the user with the hashed password
+            const user = yield insertUser_1.default.insertUser({
+                name,
+                username,
+                password: hashedPassword,
+                role,
+            });
+            if (!user) {
+                return res.status(500).json({ error: "Error creating the user" });
+            }
+            res.json({ user });
+        }));
+    }
+    else {
+        return res.status(400).json({ error: "کاربر مجاز به ایجاد کاربر جدید نیست" });
+    }
+}));
+router.post("/updateUser", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, username, id, password, role } = req.body;
+    try {
+        yield (0, updateUser_1.default)(id, name, username, password, role);
+        res.status(200).json({ message: `Password updated successfully` });
+    }
+    catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}));
+router.post("/usersList", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { page, limitPerPage } = req.body;
+    const totalCount = yield users_1.default.count();
+    const users = yield users_1.default.findAll({
+        limit: limitPerPage,
+        offset: (page - 1) * limitPerPage,
+        order: [["id", "DESC"]],
     });
-    if (!user)
-        return false;
-    res.json({ user });
+    res.json({ users, totalCount });
+}));
+router.post("/showUser", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.body;
+    const user = yield users_1.default.findOne({
+        where: { id: parseInt(id) },
+    });
+    res.json(user);
 }));
 router.post("/showReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
@@ -194,7 +243,6 @@ router.post("/listOfSystemHistory", verifyToken, (req, res) => __awaiter(void 0,
     });
     res.json({
         Events: Events.map((event) => {
-            // console.log(users.find((u) => u.id === event.userId)?.username);
             var _a;
             const username = (_a = users.find((u) => u.id === event.userId)) === null || _a === void 0 ? void 0 : _a.name;
             const numContract = contracts.find((c) => c.id === event.contractId).numContract;
@@ -273,9 +321,7 @@ router.post("/updateReports", verifyToken, (req, res) => __awaiter(void 0, void 
 function verifyToken(req, res, next) {
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
-    // console.log(token);
     if (!(token === null || token === void 0 ? void 0 : token.length)) {
-        console.log("fgdfg");
         throw new Error("Authorization token is required");
     }
     jsonwebtoken_1.default.verify(token, secretKey, function (err, decoded) {

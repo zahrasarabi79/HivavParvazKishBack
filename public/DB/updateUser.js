@@ -14,24 +14,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const users_1 = __importDefault(require("./schema/users"));
-const updatePassword = (username, password, oldPassword) => __awaiter(void 0, void 0, void 0, function* () {
+const updateUserPassword = (id, name, username, password, role) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield users_1.default.findOne({ where: { username } });
+        const user = yield users_1.default.findOne({ where: { id } });
         if (!user) {
-            throw new Error("User not found");
+            throw new Error("کاربر وجود ندارد");
+        }
+        if (user.password === password) {
+            throw new Error("رمز عبور تکراری است");
         }
         else {
-            bcrypt_1.default.compare(oldPassword, user.password, (err, result) => __awaiter(void 0, void 0, void 0, function* () {
-                if (err) {
-                    console.error(err, "eeee");
-                }
-                else if (result) {
-                    user.password = password;
-                    yield user.save();
-                    return user;
+            bcrypt_1.default.hash(password, 10, (hashErr, hashedPassword) => __awaiter(void 0, void 0, void 0, function* () {
+                if (hashErr) {
+                    console.error(hashErr);
                 }
                 else {
-                    throw new Error("رمز عبور معتبر نیست");
+                    user.set({ name, username, password: hashedPassword, role });
+                    yield user.save();
+                    return user;
                 }
             }));
         }
@@ -40,4 +40,4 @@ const updatePassword = (username, password, oldPassword) => __awaiter(void 0, vo
         throw new Error(`${error.message}`);
     }
 });
-exports.default = updatePassword;
+exports.default = updateUserPassword;

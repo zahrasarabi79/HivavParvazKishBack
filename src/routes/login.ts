@@ -9,13 +9,14 @@ import ReportsModel from "../DB/schema/reports";
 import ReportsPaymentModel from "../DB/schema/reportsPayment";
 import ReportsReturnPaymentModel from "../DB/schema/reportsReturnPayment";
 import updatepassword from "../DB/updatepassword";
-import UserModel from "../DB/schema/users";
+import UserModel, { IUserModel } from "../DB/schema/users";
 import { Events, raiseEvent } from "../DB/raise-event";
 import { updatedEventStory } from "../DB/eventStory";
 import Event from "../DB/schema/event";
 import { Op } from "sequelize";
-import { userInfo } from "os";
 import insertUser from "../DB/insertUser";
+import bcrypt from "bcrypt";
+import updateUserPassword from "../DB/updateUser";
 
 const router = express.Router();
 const secretKey = "PGS1401730";
@@ -39,15 +40,19 @@ router.post("/login", async (req, res) => {
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-
-    if (user.password === password) {
-      // User's credentials are valid; generate a JWT token
-      const token = jwt.sign({ username, id: user.id }, secretKey);
-      res.status(200).json({ token, message: "Valid credentials" });
-    } else {
-      // Password does not match
-      res.status(401).json({ message: "Invalid credentials" });
-    }
+    bcrypt.compare(password, user.password, (err, result) => {
+      if (err) {
+        console.error(err, "eeee");
+        // Handle the error
+      } else if (result) {
+        // User's credentials are valid; generate a JWT token
+        const token = jwt.sign({ username, id: user.id }, secretKey);
+        res.status(200).json({ token, message: "Valid credentials" });
+      } else {
+        // Password is incorrect
+        res.status(401).json({ message: "Password is incorrect" });
+      }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -57,23 +62,18 @@ router.post("/dashboard", verifyToken, (req, res) => {
   console.log("token has valid");
   res.json({ message: "Protected route accessed successfully" });
 });
-// router.post("/profileinformation", verifyToken, (req, res) => {
-//   const username = (req as any).user.username;
-
-//   // You can now use the username in your route handler
-//   res.json({ username });
-// });
 router.post("/profileinformation", verifyToken, async (req, res) => {
   const userId = (req as any).user.id;
+
   try {
     const user = await UserModel.findOne({
       where: { id: userId },
-      attributes: ["name"],
+      attributes: ["name", "role"],
     });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json({ name: user.name });
+    res.json({ name: user.name, role: user.role });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -81,7 +81,6 @@ router.post("/profileinformation", verifyToken, async (req, res) => {
 });
 router.post("/updatepassword", verifyToken, async (req, res) => {
   const { id, oldPassword, newPassword } = req.body;
-
   try {
     await updatepassword((req as unknown as { user: UserModel }).user.username, newPassword, oldPassword);
     res.status(200).json({ message: "Password updated successfully" });
@@ -89,7 +88,6 @@ router.post("/updatepassword", verifyToken, async (req, res) => {
     res.status(400).json({ error: (error as Error).message });
   }
 });
-
 router.post("/AddReports", verifyToken, async (req, res) => {
   if (typeof req.body !== "object" || req.body === null) {
     return res.status(400).json({ error: "Invalid payload" });
@@ -112,18 +110,72 @@ router.post("/AddUsers", verifyToken, async (req, res) => {
   if (typeof req.body !== "object" || req.body === null) {
     return res.status(400).json({ error: "Invalid User" });
   }
+
   const { name, username, password, role } = req.body as IUserDto;
-  const user = await insertUser.insertUser({
-    name,
-    username,
-    password,
-    role,
+
+  const existingUser = await UserModel.findOne({ where: { username } });
+
+  if (existingUser) {
+    return res.status(400).json({ error: "نام کاربری معتبر نمی باشد" });
+  }
+
+  const requestingUser = await UserModel.findOne({ where: { id: (req as any).user.id } });
+
+  if (requestingUser?.role === "مدیر") {
+    // Hash the password using bcrypt
+    bcrypt.hash(password, 10, async (hashErr: Error | undefined, hashedPassword: string) => {
+      if (hashErr) {
+        console.error(hashErr);
+        return res.status(500).json({ error: "Error hashing the password" });
+      }
+
+      // Create the user with the hashed password
+      const user = await insertUser.insertUser({
+        name,
+        username,
+        password: hashedPassword,
+        role,
+      });
+
+      if (!user) {
+        return res.status(500).json({ error: "Error creating the user" });
+      }
+
+      res.json({ user });
+    });
+  } else {
+    return res.status(400).json({ error: "کاربر مجاز به ایجاد کاربر جدید نیست" });
+  }
+});
+router.post("/updateUser", verifyToken, async (req, res) => {
+  const { name, username, id, password, role } = req.body;
+  try {
+    await updateUserPassword(id, name, username, password, role);
+    res.status(200).json({ message: `Password updated successfully` });
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+});
+router.post("/usersList", verifyToken, async (req, res) => {
+  const { page, limitPerPage } = req.body;
+  const totalCount = await UserModel.count();
+  const users = await UserModel.findAll({
+    limit: limitPerPage,
+    offset: (page - 1) * limitPerPage,
+
+    order: [["id", "DESC"]],
   });
 
-  if (!user) return false;
-
-  res.json({ user });
+  res.json({ users, totalCount });
 });
+router.post("/showUser", verifyToken, async (req, res) => {
+  const { id } = req.body;
+  const user = await UserModel.findOne({
+    where: { id: parseInt(id) },
+  });
+  res.json(user);
+});
+
 router.post("/showReports", verifyToken, async (req, res) => {
   const { id } = req.body;
 
@@ -201,8 +253,6 @@ router.post("/listOfSystemHistory", verifyToken, async (req, res) => {
 
   res.json({
     Events: Events.map((event: any) => {
-      // console.log(users.find((u) => u.id === event.userId)?.username);
-
       const username = users.find((u) => u.id === event.userId)?.name;
       const numContract = contracts.find((c) => c.id === event.contractId)!.numContract;
       return {
@@ -284,11 +334,7 @@ router.post("/updateReports", verifyToken, async (req, res) => {
 // Token verification middleware
 function verifyToken(req: Request, res: Response, next: Function) {
   const token = req.headers.authorization?.split(" ")[1];
-  // console.log(token);
-
   if (!token?.length) {
-    console.log("fgdfg");
-
     throw new Error("Authorization token is required");
   }
   jwt.verify(token, secretKey, function (err, decoded) {

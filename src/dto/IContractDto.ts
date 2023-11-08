@@ -14,6 +14,13 @@ export interface IUserDto {
   password: string;
   role: string;
 }
+export interface IUserUpdate {
+  name: string;
+  username: string;
+  password: string;
+  role: string;
+  id: number;
+}
 export interface IUpdateContractDto {
   id: number;
   numContract: string;
