@@ -8,6 +8,11 @@ const updateUserPassword = async (id: number, name: string, username: string, pa
     }
     if (user.password === password) {
       throw new Error("رمز عبور تکراری است");
+    }
+    if (password.trim() === "") {
+      user.set({ name, username, password: user.password, role });
+      await user.save();
+      return user;
     } else {
       bcrypt.hash(password, 10, async (hashErr: Error | undefined, hashedPassword: string) => {
         if (hashErr) {

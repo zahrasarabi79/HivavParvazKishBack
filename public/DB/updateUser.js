@@ -23,6 +23,11 @@ const updateUserPassword = (id, name, username, password, role) => __awaiter(voi
         if (user.password === password) {
             throw new Error("رمز عبور تکراری است");
         }
+        if (password.trim() === "") {
+            user.set({ name, username, password: user.password, role });
+            yield user.save();
+            return user;
+        }
         else {
             bcrypt_1.default.hash(password, 10, (hashErr, hashedPassword) => __awaiter(void 0, void 0, void 0, function* () {
                 if (hashErr) {

@@ -1,26 +1,31 @@
 import bcrypt from "bcrypt";
 import UserModel from "./schema/users";
+import { error } from "console";
 
 const updatePassword = async (username: string, password: string, oldPassword: string) => {
   try {
     const user = await UserModel.findOne({ where: { username } });
+    console.log(user?.password);
+
     if (!user) {
-      throw new Error("User not found");
+      throw { status: 404, message: "User not found" };
     } else {
-      bcrypt.compare(oldPassword, user.password, async (err, result) => {
-        if (err) {
-          console.error(err, "eeee");
-        } else if (result) {
-          user.password = password;
-          await user.save();
-          return user;
-        } else {
-          throw new Error("رمز عبور معتبر نیست");
-        }
-      });
+      const hashedOldPassword = await bcrypt.hash(oldPassword, 10);
+      console.log(hashedOldPassword);
+
+      const result = await bcrypt.compare(oldPassword, user?.password);
+
+      if (result) {
+        user.password = await bcrypt.hash(password, 10);
+        await user.save();
+        return { status: 200, message: "رمز عبور با موفقیت ویرایش شد" };
+      } else {
+        throw new Error("رمز عبور معتبر نیست");
+      }
     }
-  } catch (error) {
-    throw new Error(`${(error as Error).message}`);
+  } catch (error: any) {
+    console.error(error);
+    throw { status: 500, message: error.message };
   }
 };
 

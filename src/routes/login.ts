@@ -80,12 +80,15 @@ router.post("/profileinformation", verifyToken, async (req, res) => {
   }
 });
 router.post("/updatepassword", verifyToken, async (req, res) => {
-  const { id, oldPassword, newPassword } = req.body;
+  const { oldPassword, newPassword } = req.body;
   try {
-    await updatepassword((req as unknown as { user: UserModel }).user.username, newPassword, oldPassword);
-    res.status(200).json({ message: "Password updated successfully" });
-  } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    const result: any = await updatepassword((req as unknown as { user: UserModel }).user.username, newPassword, oldPassword);
+    console.log(result);
+
+    res.status(result.status).json({ error: result.message });
+  } catch (error: any) {
+    const status = error.status || 500; // Default to 500 if no status is provided
+    res.status(status).json({ error: error.message });
   }
 });
 router.post("/AddReports", verifyToken, async (req, res) => {

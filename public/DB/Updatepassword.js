@@ -17,27 +17,27 @@ const users_1 = __importDefault(require("./schema/users"));
 const updatePassword = (username, password, oldPassword) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield users_1.default.findOne({ where: { username } });
+        console.log(user === null || user === void 0 ? void 0 : user.password);
         if (!user) {
-            throw new Error("User not found");
+            throw { status: 404, message: "User not found" };
         }
         else {
-            bcrypt_1.default.compare(oldPassword, user.password, (err, result) => __awaiter(void 0, void 0, void 0, function* () {
-                if (err) {
-                    console.error(err, "eeee");
-                }
-                else if (result) {
-                    user.password = password;
-                    yield user.save();
-                    return user;
-                }
-                else {
-                    throw new Error("رمز عبور معتبر نیست");
-                }
-            }));
+            const hashedOldPassword = yield bcrypt_1.default.hash(oldPassword, 10);
+            console.log(hashedOldPassword);
+            const result = yield bcrypt_1.default.compare(oldPassword, user === null || user === void 0 ? void 0 : user.password);
+            if (result) {
+                user.password = yield bcrypt_1.default.hash(password, 10);
+                yield user.save();
+                return { status: 200, message: "رمز عبور با موفقیت ویرایش شد" };
+            }
+            else {
+                throw new Error("رمز عبور معتبر نیست");
+            }
         }
     }
     catch (error) {
-        throw new Error(`${error.message}`);
+        console.error(error);
+        throw { status: 500, message: error.message };
     }
 });
 exports.default = updatePassword;

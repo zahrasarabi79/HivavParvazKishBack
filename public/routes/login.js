@@ -85,13 +85,15 @@ router.post("/profileinformation", verifyToken, (req, res) => __awaiter(void 0, 
     }
 }));
 router.post("/updatepassword", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id, oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword } = req.body;
     try {
-        yield (0, updatepassword_1.default)(req.user.username, newPassword, oldPassword);
-        res.status(200).json({ message: "Password updated successfully" });
+        const result = yield (0, updatepassword_1.default)(req.user.username, newPassword, oldPassword);
+        console.log(result);
+        res.status(result.status).json({ error: result.message });
     }
     catch (error) {
-        res.status(400).json({ error: error.message });
+        const status = error.status || 500; // Default to 500 if no status is provided
+        res.status(status).json({ error: error.message });
     }
 }));
 router.post("/AddReports", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
