@@ -14,33 +14,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
 const contracts_1 = __importDefault(require("./contracts"));
-//@table : در این جا دکورتور فانکشن که پرانتزش توی تی اس کانفیگ برداشته شده
+const reportsPayment_1 = __importDefault(require("./reportsPayment"));
+const reportsReturnPayment_1 = __importDefault(require("./reportsReturnPayment"));
 let ReportsModel = class ReportsModel extends sequelize_typescript_1.Model {
 };
 __decorate([
     sequelize_typescript_1.Column,
-    __metadata("design:type", Number)
-], ReportsModel.prototype, "number", void 0);
+    __metadata("design:type", String)
+], ReportsModel.prototype, "reportDescription", void 0);
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
-], ReportsModel.prototype, "costTitle", void 0);
+], ReportsModel.prototype, "totalCost", void 0);
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
 ], ReportsModel.prototype, "presenter", void 0);
 __decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], ReportsModel.prototype, "bank", void 0);
+    (0, sequelize_typescript_1.HasMany)(() => reportsPayment_1.default),
+    __metadata("design:type", Array)
+], ReportsModel.prototype, "reportsPayment", void 0);
 __decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], ReportsModel.prototype, "payments", void 0);
-__decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], ReportsModel.prototype, "datepayment", void 0);
+    (0, sequelize_typescript_1.HasMany)(() => reportsReturnPayment_1.default),
+    __metadata("design:type", Array)
+], ReportsModel.prototype, "reportsReturnPayment", void 0);
 __decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => contracts_1.default),
     sequelize_typescript_1.Column,

@@ -33,11 +33,12 @@ const server_1 = __importDefault(require("./DB/server"));
 const api = express();
 const loginRoute = require("./routes/login");
 const port = 3001;
+const LOCAL_IP = "0.0.0.0";
 api.use(cors());
 api.use(bodyParser.urlencoded({ extended: true }));
 api.use(bodyParser.json());
 api.use("/", loginRoute);
-api.listen(port, () => {
-    console.log(`api up and running on port ${port}`);
+api.listen(port, LOCAL_IP, () => {
+    console.log(`Server is running at http://${LOCAL_IP}:${port}`);
     server_1.default.creatTable();
 });
