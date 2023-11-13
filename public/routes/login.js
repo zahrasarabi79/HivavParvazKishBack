@@ -115,12 +115,12 @@ router.post("/AddReports", verifyToken, (req, res) => __awaiter(void 0, void 0, 
 }));
 router.post("/AddUsers", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (typeof req.body !== "object" || req.body === null) {
-        return res.status(400).json({ error: "Invalid User" });
+        return res.status(400).json({ error: "کاربر یافت نشد", status: 400 });
     }
     const { name, username, password, role } = req.body;
     const existingUser = yield users_1.default.findOne({ where: { username } });
     if (existingUser) {
-        return res.status(400).json({ error: "نام کاربری معتبر نمی باشد" });
+        return res.status(400).json({ error: "نام کاربری معتبر نیست", status: 400 });
     }
     const requestingUser = yield users_1.default.findOne({ where: { id: req.user.id } });
     if ((requestingUser === null || requestingUser === void 0 ? void 0 : requestingUser.role) === "مدیر") {
@@ -128,7 +128,7 @@ router.post("/AddUsers", verifyToken, (req, res) => __awaiter(void 0, void 0, vo
         bcrypt_1.default.hash(password, 10, (hashErr, hashedPassword) => __awaiter(void 0, void 0, void 0, function* () {
             if (hashErr) {
                 console.error(hashErr);
-                return res.status(500).json({ error: "Error hashing the password" });
+                return res.status(500).json({ error: "خطا در سرور", status: 500 });
             }
             // Create the user with the hashed password
             const user = yield insertUser_1.default.insertUser({
@@ -138,13 +138,13 @@ router.post("/AddUsers", verifyToken, (req, res) => __awaiter(void 0, void 0, vo
                 role,
             });
             if (!user) {
-                return res.status(500).json({ error: "Error creating the user" });
+                return res.status(500).json({ error: "خطا در سرور", status: 500 });
             }
             res.json({ user });
         }));
     }
     else {
-        return res.status(400).json({ error: "کاربر مجاز به ایجاد کاربر جدید نیست" });
+        return res.status(400).json({ error: "کاربر مجاز به ایجاد کاربر جدید نیست", status: 400 });
     }
 }));
 router.post("/updateUser", verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
