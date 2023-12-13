@@ -111,27 +111,21 @@ router.post("/AddReports", verifyToken, async (req, res) => {
 });
 router.post("/AddUsers", verifyToken, async (req, res) => {
   if (typeof req.body !== "object" || req.body === null) {
-    return res.status(400).json({ error: "Invalid User" });
+    return res.status(400).json({ error: "کاربر یافت نشد", status: 400 });
   }
-
   const { name, username, password, role } = req.body as IUserDto;
-
   const existingUser = await UserModel.findOne({ where: { username } });
-
   if (existingUser) {
-    return res.status(400).json({ error: "نام کاربری معتبر نمی باشد" });
+    return res.status(400).json({ error: "نام کاربری معتبر نیست", status: 400 });
   }
-
   const requestingUser = await UserModel.findOne({ where: { id: (req as any).user.id } });
-
   if (requestingUser?.role === "مدیر") {
     // Hash the password using bcrypt
     bcrypt.hash(password, 10, async (hashErr: Error | undefined, hashedPassword: string) => {
       if (hashErr) {
         console.error(hashErr);
-        return res.status(500).json({ error: "Error hashing the password" });
+        return res.status(500).json({ error: "خطا در سرور", status: 500 });
       }
-
       // Create the user with the hashed password
       const user = await insertUser.insertUser({
         name,
@@ -139,15 +133,13 @@ router.post("/AddUsers", verifyToken, async (req, res) => {
         password: hashedPassword,
         role,
       });
-
       if (!user) {
-        return res.status(500).json({ error: "Error creating the user" });
+        return res.status(500).json({ error: "خطا در سرور", status: 500 });
       }
-
       res.json({ user });
     });
   } else {
-    return res.status(400).json({ error: "کاربر مجاز به ایجاد کاربر جدید نیست" });
+    return res.status(400).json({ error: "کاربر مجاز به ایجاد کاربر جدید نیست", status: 400  });
   }
 });
 router.post("/updateUser", verifyToken, async (req, res) => {
